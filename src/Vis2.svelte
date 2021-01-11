@@ -15,6 +15,7 @@
   import Alix from "./Alix.svelte";
   import Vis from "./Vis.svelte";
   import Arrow from "./Arrow.svelte";
+  import { organizeData } from "./lib";
   const width = 375;
   const height = 667;
   // var spiral = d3_radial
@@ -24,86 +25,48 @@
   var radialLocation = function (center, angle, width, height, taper) {
     const [x, y] = center;
     return [
-      x + (width * Math.cos((angle * Math.PI) / 180) - taper),
+      x + width * Math.cos((angle * Math.PI) / 180 - taper),
       y + (height * Math.sin((angle * Math.PI) / 180) - taper),
     ];
   };
   // let translate = null;
   const placement = (nodes, cx, cy, r) => {
-    const increment = 180 / (nodes.length - 1);
-    console.log("increment", increment);
+    const increment = 180 / (nodes.length - 1); //360/nodes.length
     let current = -90;
-    console.log("current", 180 / (nodes.length - 1), 0);
 
     return nodes.map((d) => {
-      const [tx, ty] = radialLocation([cx, cy], current, r, r, 1);
+      const [tx, ty] = radialLocation([cx, cy], current, r, r, 0);
       const [lx, ly] = radialLocation([cx, cy], current, r + 50, r + 50, 1);
       current += increment;
       return { ...d, tx, ty, lx, ly };
     });
   };
 
-  const dreams = {
-    id: "dreams",
-    values: data,
-    color: "blue",
-    size: 100, //Math.min(40, objects.length),
-    tx: width / 2,
-    ty: height / 2,
-  };
+  const ns = organizeData({
+    data,
+    places,
+    vehicles,
+    objects,
+    animals,
+    persons,
+  });
+  console.log("ns", ns);
+  const dreams = ns.find((n) => n.id === "dreams");
+  dreams.tx = width / 2;
+  dreams.ty = height / 2;
+  const otherData = ns.filter((n) => n.id !== "dreams");
 
-  const ns = [
-    {
-      id: "objects",
-      values: objects,
-      color: "blue",
-      size: 40, //Math.min(40, objects.length),
-    },
-    {
-      id: "persons",
-      values: persons,
-      color: "green",
-      size: 40, //Math.min(40, persons.length),
-    },
-    {
-      id: "animals",
-      values: animals,
-      color: "brown",
-      size: 40, //Math.min(40, animals.length),
-    },
-    {
-      id: "vehicles",
-      values: vehicles,
-      color: "red",
-      size: 40, //Math.max(40, vehicles.length),
-    },
-    {
-      id: "places",
-      values: places,
-      color: "yellow",
-      size: 40, //Math.max(40, places.length),
-    },
-  ];
-  const tmpNodes = placement(ns, width / 2, height / 2, 150);
+  const tmpNodes = placement(otherData, width / 2, height / 2, 150);
   let nodes = [];
 
   const simulation = d3
     .forceSimulation([...tmpNodes, dreams])
-    // .force("box", boxForce)
-    // .force("r", radialForce)
+    // .alphaMin(0.9)
     .force("collision", d3.forceCollide((d) => d.size / 2).strength(1))
-    .force("x", d3.forceX((d) => d.tx).strength(1))
-    .force("y", d3.forceY((d) => d.ty).strength(1))
-    // .force("collision", collisionForce)
-    // .force( //   "link",
-    //   d3.forceLink(links).id((d) => d.index)
-    // )
-    // .force("X", d3.forceX((d) => d.sx).strength(1))
-    // .force("Y", d3.forceY((d) => d.sy).strength(1))
+    .force("x", d3.forceX((d) => d.tx).strength(0.1))
+    .force("y", d3.forceY((d) => d.ty).strength(0.1))
     .force("charge", d3.forceManyBody())
-    // .force("center", d3.forceCenter(width / 2, height / 2))
     .on("tick", () => {
-      // console.log("tick", simulation.nodes());
       nodes = simulation.nodes();
     });
 
@@ -115,8 +78,14 @@
   let arrow;
   $: {
     bounds = [
-      [array.min(nodes, (d) => d.x - d.size / 2), array.min(nodes, (d) => d.y)],
-      [array.max(nodes, (d) => d.x + d.size), array.max(nodes, (d) => d.y)],
+      [
+        array.min(nodes, (d) => d.x - d.size / 2),
+        array.min(nodes, (d) => d.y - d.size / 2),
+      ],
+      [
+        array.max(nodes, (d) => d.x + d.size / 2),
+        array.max(nodes, (d) => d.y + d.size / 2),
+      ],
     ];
 
     const dx = bounds[1][0] - bounds[0][0];
@@ -126,12 +95,45 @@
     // console.log("bounds", bounds);
     let scale = Math.max(
       0.1,
-      Math.min(20, 0.9 / Math.max(dx / (width - 50), dy / (height - 10)))
+      Math.min(20, 0.9 / Math.max(dx / width, dy / height))
     );
 
     // console.log("arrow", arrow);
     translate = [width / 2 - scale * xx, height / 2 - scale * yy, scale];
   }
+
+  let state = 0;
+  const firstClickHandler = (n) => {
+    n.size = !n.selected ? 120 : 25;
+
+    const ns = placement(n.values, n.tx, n.ty, 200);
+    const drs = placement(n.linkedDreams, n.tx, n.ty, 300);
+
+    // console.log('drs', drs);
+    const newNodes = [n, ...ns, ...drs];
+    simulation.nodes(newNodes);
+    simulation.alpha(1);
+    // simulation.alphaMin(0.2);
+    simulation.restart();
+    // console.log('bounds', bounds);
+  };
+  const secClickHandler = (n) => {
+    n.size = !n.selected ? 120 : 25;
+
+    console.log("secClickHandler", n);
+    const ns = placement(n.values, n.tx, n.ty, 200);
+    const na = placement(n.attrs, n.tx, n.ty, 100);
+
+    // console.log('drs', drs);
+    const newNodes = [n, ...ns, ...na];
+    console.log("newNodes", newNodes);
+    simulation.nodes(newNodes);
+    simulation.alpha(1);
+    // simulation.alphaMin(0.2);
+    simulation.restart();
+    // console.log('bounds', bounds);
+  };
+  const clickHandlers = [firstClickHandler, secClickHandler];
 </script>
 
 <style>
@@ -145,29 +147,29 @@
   style="width:{width}px; height:{height}px;}">
   <div
     id="zoom-cont"
-    class="w-full h-full"
+    class="w-full h-full transition"
     style="transform: {translate ? `translate(${translate[0]}px, ${translate[1]}px) scale(${translate[2]})` : `translate(0%,0%)`}">
     {#each nodes as n (n.id)}
       <div
         on:click={() => {
-          const ns = placement(n.values, n.tx, n.ty, 200);
-          const drs = placement(dreams.values.slice(0, 20), n.tx, n.ty, 300);
-
-          // console.log('drs', drs);
-          const newNodes = [n, ...ns, ...drs];
-          simulation.nodes(newNodes);
-          // nodes = ns;
-          console.log('coll', array);
-          simulation.alpha(1);
-          simulation.restart();
-          // console.log('bounds', bounds);
+          clickHandlers[state](n);
+          state++;
         }}
-        class="absolute overflow-hidden border-2 border-black rounded-full"
-        style="left:{n.x - n.size / 2}px; top:{n.y - n.size / 2}px; width:{n.size}px; height:{n.size}px; background: {n.color}; " />
+        class="flex absolute  transition"
+        style="left:{n.x - n.size / 2}px; top:{n.y - n.size / 2}px; width:{n.size}px; height:{n.size}px; ">
+        <div
+          class="absolute border-2 -white"
+          style="width:{n.size}px; height:{n.size}px; border-color: {n.color};" />
+        <div
+          class="m-auto bg-white whitespace-nowrap"
+          style="transform: translate(-10%,-0%)">
+          {#if n.visible || n.selected}{n.title}{/if}
+        </div>
+      </div>
     {/each}
     {#each nodes as n (n.id)}
       <div
-        class="absolute bg-black w-3 h-3"
+        class="absolute  w-3 h-3"
         style="left:{n.lx}px; top:{n.ly}px; transform: translate(-50%, -50%)" />
     {/each}
 

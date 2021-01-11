@@ -311,3 +311,104 @@ const rectangular = (w, h, s, size) => {
   
     return force;
   }
+
+  export const organizeData = ({data, objects, persons, animals, places, vehicles}) =>{
+    const dreams = {
+      id: "dreams",
+      title: "ALix DréAms",
+      visible: true,
+      values: data,
+      color: "blue",
+      selected: true,
+      size: 100, //Math.min(40, objects.length),
+      // tx: width / 2,
+      // ty: height / 2,
+    };
+  return [
+    dreams,
+    {
+      id: "objects",
+      title: "ObJecTs",
+      values: objects.map((o) => ({
+        ...o,
+      attrs: [
+        {id:"color", value: o.couleur, color: 'black', size: 40}, 
+        {id: 'characteristic', value: o.char, color: 'orange', size: 40}, 
+        {id: "type", value: o.type, color: 'cyan', size: 40}, 
+        {id:"category",value: o.categorie, color: 'brown', size: 40}],
+        values: dreams.values.filter((d) =>
+          d.element.split(",").includes(o.id)
+        ),
+      })),
+      linkedDreams: objects.flatMap((o) =>
+        dreams.values.filter((d) => d.element.split(",").includes(o.id))
+      ),
+      visible: true,
+      color: "blue",
+      size: 40, //Math.min(40, objects.length),
+    },
+    {
+      id: "persons",
+      title: "PeRsOns",
+      values: persons.map((o) => ({
+        ...o,
+        values: dreams.values.filter((d) =>
+          d.personne.split(",").includes(o.id)
+        ),
+      })),
+      linkedDreams: persons.flatMap((o) =>
+        dreams.values.filter((d) => d.personne.split(",").includes(o.id))
+      ),
+      visible: true,
+      color: "green",
+      size: 40, //Math.min(40, persons.length),
+    },
+    {
+      id: "animals",
+      title: "AnImAls",
+      values: animals.map((o) => ({
+        ...o,
+        values: dreams.values.filter((d) =>
+          d.animaux.split(",").includes(o.id)
+        ),
+      })),
+      linkedDreams: animals.flatMap((o) =>
+        dreams.values.filter((d) => d.animaux.split(",").includes(o.id))
+      ),
+      visible: true,
+      color: "brown",
+      size: 40, //Math.min(40, animals.length),
+    },
+    {
+      id: "vehicles",
+      title: "VeHiCles",
+      values: vehicles.map((o) => ({
+        ...o,
+        values: dreams.values.filter((d) =>
+          d.vehicule.split(",").includes(o.id)
+        ),
+      })),
+      linkedDreams: vehicles.flatMap((o) =>
+        dreams.values.filter((d) => d.vehicule.split(",").includes(o.id))
+      ),
+      visible: true,
+      color: "red",
+      size: 40, //Math.max(40, vehicles.length),
+    },
+    {
+      id: "places",
+      title: "PlAcEs",
+      values: places.map((o) => ({
+        ...o,
+        values: dreams.values.filter((d) => d.lieu.split(",").includes(o.id)),
+      })),
+      visible: true,
+      color: "yellow",
+      linkedDreams: places.flatMap((o) =>
+        dreams.values.filter((d) => d.lieu.split(",").includes(o.id))
+      ),
+      size: 40, //Math.max(40, places.length),
+    },
+  ];
+
+  }

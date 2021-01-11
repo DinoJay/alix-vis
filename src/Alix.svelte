@@ -9,7 +9,9 @@
     .then((response) => response.text())
     .then((data) =>
       csvParse(data).map((d, i) => ({
+        ...d,
         id: i,
+        title: "DreaM " + i,
         type: "dream",
         color: "#8FBC8F",
         width: 15,
@@ -24,6 +26,7 @@
       csvParse(data).map((d, i) => ({
         ...d,
         type: "object",
+        title: "ObJecT " + i,
         color: "#E9967A",
         width: 15,
         size: 25,
@@ -36,6 +39,7 @@
       csvParse(data).map((d, i) => ({
         ...d,
         type: "person",
+        title: "PerSon " + i,
         color: "#483D8B",
         width: 15,
         size: 25,
@@ -50,6 +54,7 @@
         //TODO: why explicit?
         id: "a" + (i + 1),
         type: "animal",
+        title: "AnImaL " + i,
         color: "red",
         width: 15,
         size: 25,
@@ -62,8 +67,10 @@
       csvParse(data).map((d, i) => ({
         ...d,
         //TODO: why explicit?
-        // id: "a" + (i + 1),
+        id: "a" + (i + 1),
+        // id: 'vehicle',
         type: "vehicle",
+        title: "VeHiCle",
         color: "brown",
         width: 15,
         size: 25,
@@ -97,14 +104,10 @@
 <style>
 </style>
 
-<div>
-  <button> Click to Load Data </button>
-  {#if promise}
-    {#await promise}
-      <p>Loading...</p>
-    {:then [data, objects, persons, animals, vehicles, places]}
-      j
-      <Vis {data} {objects} {persons} {animals} {vehicles} {places} />
-    {/await}
-  {/if}
-</div>
+{#if promise}
+  {#await promise}
+    <p>Loading...</p>
+  {:then [data, objects, persons, animals, vehicles, places]}
+    <Vis {data} {objects} {persons} {animals} {vehicles} {places} />
+  {/await}
+{/if}
