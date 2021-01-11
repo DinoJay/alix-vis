@@ -1,0 +1,15 @@
+id,couleur,caracteristique,type
+a1,noir,,chat
+a2,"beige, gris",,"chat, chien"
+a3,,dessin,dragon
+a4,,"lumiere, magie, petit",animaux
+a4,roux,,chat
+a5,,motif,chat
+a6,"vert, bleu","plastique, perruque",cheval
+a7,,enorme,pieuvre
+a8,blanc,,chat
+a9,rouge,mort,perroquet
+a10,,mort,vache
+a11,,mini,chat
+a12,,enorme,loup
+a13,,enorme,cheval

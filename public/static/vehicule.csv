@@ -1,0 +1,8 @@
+id,couleur,caracteristique,type
+v1,blanc,,camion
+v2,"rose, jaune, orange",fluo,voiture
+v3,"verte, jaune",petit,voiture
+v4,,plastique,velo
+v5,,police,voiture
+v6,,plastique,camion
+v7,,cassé,camion

@@ -1,0 +1,67 @@
+id,type,caracteristique,couleur
+l1,magasin,ski,
+l2,magasin,patisserie,
+l3,ecole,"dessin, jardinage",
+l4,ecole,magie,
+l7,rue,petit,
+l8,bars,sous terre,
+l9,chalet,moderne,
+l11,salle,danse,
+l12,maison,degradé,"vert, kaki, bleu, jaune, marron"
+l13,quatier,"glauque, bizarre, residentiel",
+l14,maison,"acier, cylindrique",
+l15,studio,long,
+l16,maison,,gris
+l17,ville,sombre,gris
+l18,chambre,sous terre,
+l19,immeuble,cylindrique,blanc
+l20,chambre,"propre, rangé",
+l21,rue,sombre,"vert, gris"
+l22,hall,musée,
+l23,ile,flottante,
+l25,salle,,blanc
+l26,salon,mauvais gout,
+l27,chaise,cassé,
+l28,maison,ancien,
+l29,ville,"sombre, petit","gris, marron"
+l30,village,sombre,
+l31,parc,"ecole, cimetiere, sombre",vert
+l32,manoir,"rond, petit",
+l33,gare,fantastique,
+l34,galerie ,couverte,doré
+l35,dortoire,bois,
+l36,salle ,"rond, verre","doré, blanc"
+l37,maison,"vieux, grand",
+l38,ville,grand,
+l39,maison,"sous terre, moderne",
+l40,chateau,vieux,
+l41,espace,enorme,
+l42,salle de bain,cassé,
+l43,maison,enorme,
+l44,piramide,verre,
+l45,"maison, ferme","grand, beau, pierre",
+l46,jardin,grand,
+l47,piece,"pailette, fantastique",rose
+l48,maison,sombre,
+l49,salle a manger,grand,
+l50,ville,"vieux, beau",
+l51,ville,fantastique,
+l52,escalier,"art deco, vieux, beau",
+l53,piece,calfetré,"noir, vert, doré"
+l54,immeuble,"vieux, architecture",
+l55,ville,,"jaune, orange, blanc"
+l56,batiment,"architecture, foncé","gris, violet, rouge, vert, orange"
+l57,pont,"fin, grand",blanc
+l58,forteresse,flotante,
+l59,maison,"vieux, sombre",
+l60,cirque,,"vert, violet, gris"
+l61,maison,"beau, grand",
+l63,hotel,carré,
+l64,dortoire,sombre,
+l65,terrasse,verre,
+l67,parking,glauque,
+l68,rue,sombre,
+l69,port,vieux,
+l70,magasin,parfum,
+l71,magasin,art,
+l72,jardin,petit,
