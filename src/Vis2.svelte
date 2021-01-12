@@ -1,21 +1,22 @@
 <script>
+  import { onMount } from "svelte";
+  // import d3_radial from "d3-radial";
+  import * as d3 from "d3-force";
+  import uniq from "lodash.uniqby";
+  // import * as z from "d3-zoom";
+  import * as array from "d3-array";
+  import * as sel from "d3-selection";
+  import Alix from "./Alix.svelte";
+  // import Vis from "./Vis.tmp";
+  import Arrow from "./Arrow.svelte";
+  import { organizeData } from "./lib";
+
   export let data = [];
   export let objects = [];
   export let persons = [];
   export let animals = [];
   export let vehicles = [];
   export let places = [];
-
-  import { onMount } from "svelte";
-  // import d3_radial from "d3-radial";
-  import * as d3 from "d3-force";
-  // import * as z from "d3-zoom";
-  import * as array from "d3-array";
-  import * as sel from "d3-selection";
-  import Alix from "./Alix.svelte";
-  import Vis from "./Vis.svelte";
-  import Arrow from "./Arrow.svelte";
-  import { organizeData } from "./lib";
   const width = 375;
   const height = 667;
   // var spiral = d3_radial
@@ -30,8 +31,8 @@
     ];
   };
   // let translate = null;
-  const placement = (nodes, cx, cy, r) => {
-    const increment = 180 / (nodes.length - 1); //360/nodes.length
+  const placement = (nodes, cx, cy, r, half) => {
+    const increment = half ? 180 / (nodes.length - 1) : 360 / nodes.length;
     let current = -90;
 
     return nodes.map((d) => {
@@ -56,15 +57,15 @@
   dreams.ty = height / 2;
   const otherData = ns.filter((n) => n.id !== "dreams");
 
-  const tmpNodes = placement(otherData, width / 2, height / 2, 150);
+  const tmpNodes = placement(otherData, width / 2, height / 2, 150, true);
   let nodes = [];
 
   const simulation = d3
     .forceSimulation([...tmpNodes, dreams])
     // .alphaMin(0.9)
-    .force("collision", d3.forceCollide((d) => d.size / 2).strength(1))
-    .force("x", d3.forceX((d) => d.tx).strength(0.1))
-    .force("y", d3.forceY((d) => d.ty).strength(0.1))
+    .force("collision", d3.forceCollide((d) => d.size / 2 + 5).strength(1))
+    .force("x", d3.forceX((d) => d.tx).strength(0.8))
+    .force("y", d3.forceY((d) => d.ty).strength(0.8))
     .force("charge", d3.forceManyBody())
     .on("tick", () => {
       nodes = simulation.nodes();
@@ -106,11 +107,11 @@
   const firstClickHandler = (n) => {
     n.size = !n.selected ? 120 : 25;
 
-    const ns = placement(n.values, n.tx, n.ty, 200);
-    const drs = placement(n.linkedDreams, n.tx, n.ty, 300);
+    const ns = placement(n.values, n.tx, n.ty, 300, true);
+    const drs = placement(n.linkedDreams, n.tx, n.ty, 450, true);
 
-    // console.log('drs', drs);
-    const newNodes = [n, ...ns, ...drs];
+    console.log("drs", drs);
+    const newNodes = uniq([n, ...ns, ...drs], "id");
     simulation.nodes(newNodes);
     simulation.alpha(1);
     // simulation.alphaMin(0.2);
@@ -118,11 +119,11 @@
     // console.log('bounds', bounds);
   };
   const secClickHandler = (n) => {
-    n.size = !n.selected ? 120 : 25;
+    n.size = !n.selected ? 80 : 25;
 
     console.log("secClickHandler", n);
-    const ns = placement(n.values, n.tx, n.ty, 200);
-    const na = placement(n.attrs, n.tx, n.ty, 100);
+    const ns = placement(n.values, n.tx, n.ty, 200, true);
+    const na = placement(n.attrs, n.tx, n.ty, 100, true);
 
     // console.log('drs', drs);
     const newNodes = [n, ...ns, ...na];
