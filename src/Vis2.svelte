@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   // import d3_radial from "d3-radial";
   import * as d3 from "d3-force";
+  import { group } from "d3-array";
   import uniq from "lodash.uniqby";
   // import * as z from "d3-zoom";
   import * as array from "d3-array";
@@ -17,7 +18,7 @@
   export let animals = [];
   export let vehicles = [];
   export let places = [];
-  const width = 375;
+  const width = 675;
   const height = 667;
   // var spiral = d3_radial
   //   .spiral([width / 2, height / 2])
@@ -37,7 +38,7 @@
 
     return nodes.map((d) => {
       const [tx, ty] = radialLocation([cx, cy], current, r, r, 0);
-      const [lx, ly] = radialLocation([cx, cy], current, r + 50, r + 50, 1);
+      const [lx, ly] = radialLocation([cx, cy], current, r + 50, r + 50, 0);
       current += increment;
       return { ...d, tx, ty, lx, ly };
     });
@@ -57,7 +58,7 @@
   dreams.ty = height / 2;
   const otherData = ns.filter((n) => n.id !== "dreams");
 
-  const tmpNodes = placement(otherData, width / 2, height / 2, 150, true);
+  const tmpNodes = placement(otherData, width / 2, height / 2, 150);
   let nodes = [];
 
   const simulation = d3
@@ -99,31 +100,33 @@
       Math.min(20, 0.9 / Math.max(dx / width, dy / height))
     );
 
-    // console.log("arrow", arrow);
     translate = [width / 2 - scale * xx, height / 2 - scale * yy, scale];
   }
 
   let state = 0;
   const firstClickHandler = (n) => {
     n.size = !n.selected ? 120 : 25;
+    // n.attrs.map(a => group())
+    console.log("group", n);
+    // const gr = group(n.values)
 
-    const ns = placement(n.values, n.tx, n.ty, 300, true);
-    const drs = placement(n.linkedDreams, n.tx, n.ty, 450, true);
+    const vals = placement(n.values, n.tx, n.ty, 300);
+    const linkedDreams = placement(n.linkedDreams, n.tx, n.ty, 450);
 
-    console.log("drs", drs);
-    const newNodes = uniq([n, ...ns, ...drs], "id");
+    console.log("linkedDreams", linkedDreams);
+    console.log("vals", vals);
+    const newNodes = uniq([n, ...vals, ...linkedDreams], "id");
     simulation.nodes(newNodes);
     simulation.alpha(1);
-    // simulation.alphaMin(0.2);
     simulation.restart();
-    // console.log('bounds', bounds);
   };
+
   const secClickHandler = (n) => {
     n.size = !n.selected ? 80 : 25;
 
     console.log("secClickHandler", n);
-    const ns = placement(n.values, n.tx, n.ty, 200, true);
-    const na = placement(n.attrs, n.tx, n.ty, 100, true);
+    const ns = placement(n.values, n.tx, n.ty, 200);
+    const na = placement(n.attrs, n.tx, n.ty, 100);
 
     // console.log('drs', drs);
     const newNodes = [n, ...ns, ...na];

@@ -1,4 +1,4 @@
-id,couleur,caracteristique,type
+id,color,character,type
 a1,noir,,chat
 a2,"beige, gris",,"chat, chien"
 a3,,dessin,dragon

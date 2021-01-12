@@ -1,4 +1,5 @@
 import { quadtree } from "d3-quadtree";
+import uniq from "lodash.uniqby";
 // import {nest} from 'd3-collection';
 export const rectCollide = () => {
   var nodes, sizes, masses;
@@ -127,44 +128,163 @@ export const organizeData = ({
     // tx: width / 2,
     // ty: height / 2,
   };
+  const placeVals = places
+    .map((o) => ({
+      ...o,
+      values: dreams.values.filter((d) => d.lieu.split(",").includes(o.id)),
+      attrs: [
+        { id: "color", value: o.couleur, color: "black", size: 40 },
+        { id: "characteristic", value: o.char, color: "orange", size: 40 },
+        { id: "type", value: o.type, color: "cyan", size: 40 },
+      ],
+    }))
+    .concat(
+      dreams.values.flatMap((d) =>
+        d.lieu
+          .split(",")
+          .filter((pid) => !places.find((p) => p.id === pid))
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .reduce((acc, s) => (!acc.includes(s) ? [s, ...acc] : acc), [])
+          .map((d) => ({
+            id: d,
+            type: "animal",
+            title: d,
+            attrs: [],
+            values: [],
+            size: 25,
+          }))
+      )
+    );
+  const vehicleVals = vehicles
+    .map((o) => ({
+      ...o,
+      values: dreams.values.filter((d) => d.vehicule.split(",").includes(o.id)),
+      attrs: [
+        { id: "color", value: o.couleur, color: "black", size: 40 },
+        { id: "characteristic", value: o.char, color: "orange", size: 40 },
+        { id: "type", value: o.type, color: "cyan", size: 40 },
+      ],
+    }))
+    .concat(
+      dreams.values.flatMap((d) =>
+        d.vehicule
+          .split(",")
+          .filter((pid) => !vehicles.find((p) => p.id === pid))
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .reduce((acc, s) => (!acc.includes(s) ? [s, ...acc] : acc), [])
+          .map((d) => ({
+            id: d,
+            type: "vehicle",
+            values: [],
+            color: "red",
+            title: d,
+            attrs: [],
+            size: 25,
+          }))
+      )
+    );
+  const animalVals = animals
+    .map((o) => ({
+      ...o,
+      values: dreams.values.filter((d) => d.animaux.split(",").includes(o.id)),
+      attrs: [
+        { id: "color", value: o.couleur, color: "black", size: 40 },
+        { id: "characteristic", value: o.char, color: "orange", size: 40 },
+        { id: "type", value: o.type, color: "cyan", size: 40 },
+      ],
+    }))
+    .concat(
+      dreams.values.flatMap((d) =>
+        d.animaux
+          .split(",")
+          .filter((pid) => !animals.find((p) => p.id === pid))
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .reduce((acc, s) => (!acc.includes(s) ? [s, ...acc] : acc), [])
+          .map((d) => ({
+            id: d,
+            type: "animal",
+            color: "brown",
+            title: d,
+            values: [],
+            attrs: [],
+            size: 25,
+          }))
+      )
+    );
+  const personVals = persons
+    .map((o) => ({
+      ...o,
+      values: dreams.values.filter((d) => d.personne.split(",").includes(o.id)),
+      attrs: [
+        { id: "characteristic", value: o.char, color: "orange", size: 40 },
+        { id: "type", value: o.type, color: "cyan", size: 40 },
+      ],
+    }))
+    .concat(
+      dreams.values.flatMap((d) =>
+        d.personne
+          .split(",")
+          .filter((pid) => !persons.find((p) => p.id === pid))
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .reduce((acc, s) => (!acc.includes(s) ? [s, ...acc] : acc), [])
+          .map((d) => ({
+            id: d,
+            type: "person",
+            color: "green",
+            title: d,
+            attrs: [],
+            values: [],
+            size: 25,
+          }))
+      )
+    );
+  const objectVals = objects
+    .map((o) => ({
+      ...o,
+      color: "blue",
+      attrs: [
+        { id: "color", value: o.couleur, color: "black", size: 40 },
+        { id: "characteristic", value: o.char, color: "orange", size: 40 },
+        { id: "type", value: o.type, color: "cyan", size: 40 },
+        { id: "category", value: o.categorie, color: "brown", size: 40 },
+      ],
+      values: dreams.values.filter((d) => d.element.split(",").includes(o.id)),
+    }))
+    .concat(
+      dreams.values.flatMap((d) =>
+        d.element
+          .split(",")
+          .filter((pid) => !objects.find((p) => p.id === pid))
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .reduce((acc, s) => (!acc.includes(s) ? [s, ...acc] : acc), [])
+          .map((d) => ({
+            id: d,
+            type: "person",
+            color: "blue",
+            title: d,
+            values: [],
+            attrs: [],
+            size: 25,
+          }))
+      )
+    );
   return [
     dreams,
     {
       id: "objects",
       title: "ObJecTs",
-      values: objects
-        .map((o) => ({
-          ...o,
-          attrs: [
-            { id: "color", value: o.couleur, color: "black", size: 40 },
-            { id: "characteristic", value: o.char, color: "orange", size: 40 },
-            { id: "type", value: o.type, color: "cyan", size: 40 },
-            { id: "category", value: o.categorie, color: "brown", size: 40 },
-          ],
-          values: dreams.values.filter((d) =>
-            d.element.split(",").includes(o.id)
-          ),
-        }))
-        .concat(
-          dreams.values.flatMap((d) =>
-            d.element
-              .split(",")
-              .filter((pid) => !objects.find((p) => p.id === pid))
-              .map((s) => s.trim())
-              .filter(Boolean)
-              .reduce((acc, s) => (!acc.includes(s) ? [s, ...acc] : acc), [])
-              .map((d) => ({
-                id: d,
-                type: "person",
-                color: "blue",
-                title: d,
-                attrs: [],
-                size: 25,
-              }))
-          )
+      values: objectVals,
+      attrs: ["color", "character", "type", "category"],
+      linkedDreams: uniq(
+        objectVals.flatMap((o) =>
+          dreams.values.filter((d) => d.element.split(",").includes(o.id))
         ),
-      linkedDreams: objects.flatMap((o) =>
-        dreams.values.filter((d) => d.element.split(",").includes(o.id))
+        "id"
       ),
       visible: true,
       color: "blue",
@@ -173,37 +293,12 @@ export const organizeData = ({
     {
       id: "persons",
       title: "PeRsOns",
-      values: persons
-        .map((o) => ({
-          ...o,
-          values: dreams.values.filter((d) =>
-            d.personne.split(",").includes(o.id)
-          ),
-          attrs: [
-            { id: "characteristic", value: o.char, color: "orange", size: 40 },
-            { id: "type", value: o.type, color: "cyan", size: 40 },
-          ],
-        }))
-        .concat(
-          dreams.values.flatMap((d) =>
-            d.personne
-              .split(",")
-              .filter((pid) => !persons.find((p) => p.id === pid))
-              .map((s) => s.trim())
-              .filter(Boolean)
-              .reduce((acc, s) => (!acc.includes(s) ? [s, ...acc] : acc), [])
-              .map((d) => ({
-                id: d,
-                type: "person",
-                color: "green",
-                title: d,
-                attrs: [],
-                size: 25,
-              }))
-          )
+      values: personVals,
+      linkedDreams: uniq(
+        personVals.flatMap((o) =>
+          dreams.values.filter((d) => d.personne.split(",").includes(o.id))
         ),
-      linkedDreams: persons.flatMap((o) =>
-        dreams.values.filter((d) => d.personne.split(",").includes(o.id))
+        "id"
       ),
       visible: true,
       color: "green",
@@ -212,38 +307,13 @@ export const organizeData = ({
     {
       id: "animals",
       title: "AnImAls",
-      values: animals
-        .map((o) => ({
-          ...o,
-          values: dreams.values.filter((d) =>
-            d.animaux.split(",").includes(o.id)
-          ),
-          attrs: [
-            { id: "color", value: o.couleur, color: "black", size: 40 },
-            { id: "characteristic", value: o.char, color: "orange", size: 40 },
-            { id: "type", value: o.type, color: "cyan", size: 40 },
-          ],
-        }))
-        .concat(
-          dreams.values.flatMap((d) =>
-            d.animaux
-              .split(",")
-              .filter((pid) => !animals.find((p) => p.id === pid))
-              .map((s) => s.trim())
-              .filter(Boolean)
-              .reduce((acc, s) => (!acc.includes(s) ? [s, ...acc] : acc), [])
-              .map((d) => ({
-                id: d,
-                type: "animal",
-                color: "brown",
-                title: d,
-                attrs: [],
-                size: 25,
-              }))
-          )
+      attrs: ["color", "character", "type", "category"],
+      values: animalVals,
+      linkedDreams: uniq(
+        animalVals.flatMap((o) =>
+          dreams.values.filter((d) => d.animaux.split(",").includes(o.id))
         ),
-      linkedDreams: animals.flatMap((o) =>
-        dreams.values.filter((d) => d.animaux.split(",").includes(o.id))
+        "id"
       ),
       visible: true,
       color: "brown",
@@ -252,39 +322,12 @@ export const organizeData = ({
     {
       id: "vehicles",
       title: "VeHiCles",
-      values: vehicles
-        .map((o) => ({
-          ...o,
-          values: dreams.values.filter((d) =>
-            d.vehicule.split(",").includes(o.id)
-          ),
-          attrs: [
-            { id: "color", value: o.couleur, color: "black", size: 40 },
-            { id: "characteristic", value: o.char, color: "orange", size: 40 },
-            { id: "type", value: o.type, color: "cyan", size: 40 },
-          ],
-        }))
-        .concat(
-          dreams.values.flatMap((d) =>
-            d.vehicule
-              .split(",")
-              .filter((pid) => !vehicles.find((p) => p.id === pid))
-              .map((s) => s.trim())
-              .filter(Boolean)
-              .reduce((acc, s) => (!acc.includes(s) ? [s, ...acc] : acc), [])
-              .map((d) => ({
-                id: d,
-                type: "vehicle",
-                values: [],
-                color: "red",
-                title: d,
-                attrs: [],
-                size: 25,
-              }))
-          )
+      values: vehicleVals,
+      linkedDreams: uniq(
+        vehicleVals.flatMap((o) =>
+          dreams.values.filter((d) => d.vehicule.split(",").includes(o.id))
         ),
-      linkedDreams: vehicles.flatMap((o) =>
-        dreams.values.filter((d) => d.vehicule.split(",").includes(o.id))
+        "id"
       ),
       visible: true,
       color: "red",
@@ -293,37 +336,14 @@ export const organizeData = ({
     {
       id: "places",
       title: "PlAcEs",
-      values: places
-        .map((o) => ({
-          ...o,
-          values: dreams.values.filter((d) => d.lieu.split(",").includes(o.id)),
-          attrs: [
-            { id: "color", value: o.couleur, color: "black", size: 40 },
-            { id: "characteristic", value: o.char, color: "orange", size: 40 },
-            { id: "type", value: o.type, color: "cyan", size: 40 },
-          ],
-        }))
-        .concat(
-          dreams.values.flatMap((d) =>
-            d.lieu
-              .split(",")
-              .filter((pid) => !places.find((p) => p.id === pid))
-              .map((s) => s.trim())
-              .filter(Boolean)
-              .reduce((acc, s) => (!acc.includes(s) ? [s, ...acc] : acc), [])
-              .map((d) => ({
-                id: d,
-                type: "animal",
-                title: d,
-                attrs: [],
-                size: 25,
-              }))
-          )
-        ),
+      values: placeVals,
       visible: true,
       color: "yellow",
-      linkedDreams: places.flatMap((o) =>
-        dreams.values.filter((d) => d.lieu.split(",").includes(o.id))
+      linkedDreams: uniq(
+        places.flatMap((o) =>
+          dreams.values.filter((d) => d.lieu.split(",").includes(o.id))
+        ),
+        "id"
       ),
       size: 40, //Math.max(40, places.length),
     },
