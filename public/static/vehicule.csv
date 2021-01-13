@@ -1,4 +1,4 @@
-id,couleur,caracteristique,type
+id,color,character,type
 v1,blanc,,camion
 v2,"rose, jaune, orange",fluo,voiture
 v3,"verte, jaune",petit,voiture
