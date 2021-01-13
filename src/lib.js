@@ -1,6 +1,15 @@
 import { quadtree } from "d3-quadtree";
 import uniq from "lodash.uniqby";
+import { group } from "d3-array";
 // import {nest} from 'd3-collection';
+
+const isIntersect = (setA, setB) => {
+  // console.log("a", a, "b", b);
+  const ret =
+    setA.map((a) => setB.includes(a)).filter(Boolean).length > 0 ||
+    setB.map((b) => setA.includes(b)).filter(Boolean).length > 0;
+  return ret;
+};
 export const rectCollide = () => {
   var nodes, sizes, masses;
   var size = constant([0, 0]);
@@ -122,25 +131,42 @@ export const organizeData = ({
     title: "ALix DréAms",
     visible: true,
     values: data,
-    color: "blue",
+    attrs: [
+      "année",
+      "mois",
+      "place",
+      "person",
+      "object",
+      "corps",
+      "vehicle",
+      "animal",
+      "evenement",
+    ],
+    displayColor: "blue",
     selected: true,
     size: 100, //Math.min(40, objects.length),
     // tx: width / 2,
     // ty: height / 2,
   };
+  const placeAttrs = ["color", "character", "type"];
   const placeVals = places
     .map((o) => ({
       ...o,
-      values: dreams.values.filter((d) => d.lieu.split(",").includes(o.id)),
+      values: dreams.values.filter((d) => d.place.split(",").includes(o.id)),
       attrs: [
-        { id: "color", value: o.couleur, color: "black", size: 40 },
-        { id: "characteristic", value: o.char, color: "orange", size: 40 },
-        { id: "type", value: o.type, color: "cyan", size: 40 },
+        { id: "color", value: o.couleur, displayColor: "black", size: 40 },
+        {
+          id: "characteristic",
+          value: o.char,
+          displayColor: "orange",
+          size: 40,
+        },
+        { id: "type", value: o.type, displayColor: "cyan", size: 40 },
       ],
     }))
     .concat(
       dreams.values.flatMap((d) =>
-        d.lieu
+        d.place
           .split(",")
           .filter((pid) => !places.find((p) => p.id === pid))
           .map((s) => s.trim())
@@ -148,7 +174,7 @@ export const organizeData = ({
           .reduce((acc, s) => (!acc.includes(s) ? [s, ...acc] : acc), [])
           .map((d) => ({
             id: d,
-            type: "animal",
+            type: "character",
             title: d,
             attrs: [],
             values: [],
@@ -156,19 +182,20 @@ export const organizeData = ({
           }))
       )
     );
+  const vehiclelAttrs = ["color", "character", "type"];
   const vehicleVals = vehicles
     .map((o) => ({
       ...o,
-      values: dreams.values.filter((d) => d.vehicule.split(",").includes(o.id)),
+      values: dreams.values.filter((d) => d.vehicle.split(",").includes(o.id)),
       attrs: [
-        { id: "color", value: o.couleur, color: "black", size: 40 },
-        { id: "characteristic", value: o.char, color: "orange", size: 40 },
-        { id: "type", value: o.type, color: "cyan", size: 40 },
+        { id: "color", value: o.couleur, displayColor: "black", size: 40 },
+        { id: "character", value: o.char, displayColor: "orange", size: 40 },
+        { id: "type", value: o.type, displayColor: "cyan", size: 40 },
       ],
     }))
     .concat(
       dreams.values.flatMap((d) =>
-        d.vehicule
+        d.vehicle
           .split(",")
           .filter((pid) => !vehicles.find((p) => p.id === pid))
           .map((s) => s.trim())
@@ -178,26 +205,32 @@ export const organizeData = ({
             id: d,
             type: "vehicle",
             values: [],
-            color: "red",
+            displayColor: "red",
             title: d,
             attrs: [],
             size: 25,
           }))
       )
     );
+  const animalAttrs = ["color", "character", "type"];
   const animalVals = animals
     .map((o) => ({
       ...o,
-      values: dreams.values.filter((d) => d.animaux.split(",").includes(o.id)),
+      values: dreams.values.filter((d) => d.animal.split(",").includes(o.id)),
       attrs: [
-        { id: "color", value: o.couleur, color: "black", size: 40 },
-        { id: "characteristic", value: o.char, color: "orange", size: 40 },
-        { id: "type", value: o.type, color: "cyan", size: 40 },
+        { id: "color", value: o.couleur, displayColor: "black", size: 40 },
+        {
+          id: "characteristic",
+          value: o.char,
+          displayColor: "orange",
+          size: 40,
+        },
+        { id: "type", value: o.type, displayColor: "cyan", size: 40 },
       ],
     }))
     .concat(
       dreams.values.flatMap((d) =>
-        d.animaux
+        d.animal
           .split(",")
           .filter((pid) => !animals.find((p) => p.id === pid))
           .map((s) => s.trim())
@@ -206,7 +239,7 @@ export const organizeData = ({
           .map((d) => ({
             id: d,
             type: "animal",
-            color: "brown",
+            displayColor: "brown",
             title: d,
             values: [],
             attrs: [],
@@ -214,18 +247,19 @@ export const organizeData = ({
           }))
       )
     );
+  const personAttrs = ["character", "type"];
   const personVals = persons
     .map((o) => ({
       ...o,
-      values: dreams.values.filter((d) => d.personne.split(",").includes(o.id)),
+      values: dreams.values.filter((d) => d.person.split(",").includes(o.id)),
       attrs: [
-        { id: "characteristic", value: o.char, color: "orange", size: 40 },
-        { id: "type", value: o.type, color: "cyan", size: 40 },
+        { id: "character", value: o.char, displayColor: "orange", size: 40 },
+        { id: "type", value: o.type, displayColor: "cyan", size: 40 },
       ],
     }))
     .concat(
       dreams.values.flatMap((d) =>
-        d.personne
+        d.person
           .split(",")
           .filter((pid) => !persons.find((p) => p.id === pid))
           .map((s) => s.trim())
@@ -234,7 +268,7 @@ export const organizeData = ({
           .map((d) => ({
             id: d,
             type: "person",
-            color: "green",
+            displayColor: "green",
             title: d,
             attrs: [],
             values: [],
@@ -242,21 +276,27 @@ export const organizeData = ({
           }))
       )
     );
+  const objectAttrs = ["color", "character", "type", "category"];
   const objectVals = objects
     .map((o) => ({
       ...o,
-      color: "blue",
+      displayColor: "blue",
       attrs: [
-        { id: "color", value: o.couleur, color: "black", size: 40 },
-        { id: "characteristic", value: o.char, color: "orange", size: 40 },
-        { id: "type", value: o.type, color: "cyan", size: 40 },
-        { id: "category", value: o.categorie, color: "brown", size: 40 },
+        { id: "color", value: o.couleur, displayColor: "black", size: 40 },
+        {
+          id: "characteristic",
+          value: o.character,
+          displayColor: "orange",
+          size: 40,
+        },
+        { id: "type", value: o.type, displayColor: "cyan", size: 40 },
+        { id: "category", value: o.categorie, displayColor: "brown", size: 40 },
       ],
-      values: dreams.values.filter((d) => d.element.split(",").includes(o.id)),
+      values: dreams.values.filter((d) => d.object.split(",").includes(o.id)),
     }))
     .concat(
       dreams.values.flatMap((d) =>
-        d.element
+        d.object
           .split(",")
           .filter((pid) => !objects.find((p) => p.id === pid))
           .map((s) => s.trim())
@@ -265,7 +305,7 @@ export const organizeData = ({
           .map((d) => ({
             id: d,
             type: "person",
-            color: "blue",
+            displayColor: "blue",
             title: d,
             values: [],
             attrs: [],
@@ -273,75 +313,130 @@ export const organizeData = ({
           }))
       )
     );
+  const extractGroups = (values, attrs) =>
+    attrs.map((a) => {
+      const extractLinkedDreams = (ids) => {
+        return uniq(
+          dreams.attrs.flatMap((a) => {
+            return dreams.values.filter((d) => {
+              return d[a] && isIntersect(ids, d[a].split(","));
+            });
+          }),
+          "id"
+        );
+      };
+      console.log("values", values);
+      const tmp = values.flatMap((d) => {
+        if (d[a] && d[a].includes(",")) {
+          return d[a].split(",").map((b) => ({ ...d, [a]: b.trim() }));
+        }
+        return d;
+      });
+      const groups = [...group(tmp, (d) => d[a])]
+        .filter(([id]) => !!id)
+        .map(([id, values]) => ({
+          id,
+          values,
+          linkedDreams: extractLinkedDreams(values.map((d) => d.id)),
+          title: id,
+          visible: true,
+          size: 25,
+        }));
+      console.log("groups", groups);
+
+      const ids = groups.flatMap((d) => d.values.map((d) => d.id));
+
+      // console.log("a", a, "ids", ids, "vals", vals);
+
+      const linkedDreams = extractLinkedDreams(ids);
+
+      console.log("linkedDreams", linkedDreams);
+      return {
+        id: a,
+        values: groups,
+        linkedDreams,
+        visible: true,
+        title: a,
+        size: 50,
+      };
+    });
   return [
     dreams,
     {
       id: "objects",
       title: "ObJecTs",
       values: objectVals,
-      attrs: ["color", "character", "type", "category"],
+      attrs: objectAttrs,
+      groups: extractGroups(objectVals, objectAttrs),
       linkedDreams: uniq(
         objectVals.flatMap((o) =>
-          dreams.values.filter((d) => d.element.split(",").includes(o.id))
+          dreams.values.filter((d) => d.object.split(",").includes(o.id))
         ),
         "id"
       ),
       visible: true,
-      color: "blue",
+      displayColor: "blue",
       size: 40, //Math.min(40, objects.length),
     },
     {
       id: "persons",
       title: "PeRsOns",
+      attrs: personAttrs,
       values: personVals,
+      groups: extractGroups(personVals, personAttrs),
       linkedDreams: uniq(
         personVals.flatMap((o) =>
-          dreams.values.filter((d) => d.personne.split(",").includes(o.id))
+          dreams.values.filter((d) => d.person.split(",").includes(o.id))
         ),
         "id"
       ),
       visible: true,
-      color: "green",
+      displayColor: "green",
       size: 40, //Math.min(40, persons.length),
     },
     {
       id: "animals",
       title: "AnImAls",
-      attrs: ["color", "character", "type", "category"],
+      attrs: animalAttrs, //["color", "character", "type", "category"],
       values: animalVals,
+      groups: extractGroups(animalVals, animalAttrs),
       linkedDreams: uniq(
         animalVals.flatMap((o) =>
-          dreams.values.filter((d) => d.animaux.split(",").includes(o.id))
+          dreams.values.filter((d) => d.animal.split(",").includes(o.id))
         ),
         "id"
       ),
       visible: true,
-      color: "brown",
+      displayColor: "brown",
       size: 40, //Math.min(40, animals.length),
     },
     {
       id: "vehicles",
       title: "VeHiCles",
       values: vehicleVals,
+      attrs: vehiclelAttrs, //["color", "character", "type"],
+      groups: extractGroups(vehicleVals, vehiclelAttrs),
       linkedDreams: uniq(
         vehicleVals.flatMap((o) =>
-          dreams.values.filter((d) => d.vehicule.split(",").includes(o.id))
+          dreams.values.filter((d) => d.vehicle.split(",").includes(o.id))
         ),
         "id"
       ),
       visible: true,
-      color: "red",
+      displayColor: "red",
       size: 40, //Math.max(40, vehicles.length),
     },
     {
       id: "places",
       title: "PlAcEs",
       values: placeVals,
+      attrs: placeAttrs, //["color", "character", "type"],
+      groups: extractGroups(placeVals, placeAttrs),
       visible: true,
-      color: "yellow",
+      displayColor: "yellow",
       linkedDreams: uniq(
         places.flatMap((o) =>
-          dreams.values.filter((d) => d.lieu.split(",").includes(o.id))
+          dreams.values.filter((d) => d.place.split(",").includes(o.id))
         ),
         "id"
       ),

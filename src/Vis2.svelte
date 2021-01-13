@@ -2,7 +2,6 @@
   import { onMount } from "svelte";
   // import d3_radial from "d3-radial";
   import * as d3 from "d3-force";
-  import { group } from "d3-array";
   import uniq from "lodash.uniqby";
   // import * as z from "d3-zoom";
   import * as array from "d3-array";
@@ -106,15 +105,15 @@
   let state = 0;
   const firstClickHandler = (n) => {
     n.size = !n.selected ? 120 : 25;
-    // n.attrs.map(a => group())
-    console.log("group", n);
+    console.log("n", n);
+    // console.log("groups", groups);
     // const gr = group(n.values)
 
-    const vals = placement(n.values, n.tx, n.ty, 300);
-    const linkedDreams = placement(n.linkedDreams, n.tx, n.ty, 450);
+    const vals = placement(n.groups, n.tx, n.ty, 200);
+    const linkedDreams = placement(n.linkedDreams, n.tx, n.ty, 300);
 
-    console.log("linkedDreams", linkedDreams);
-    console.log("vals", vals);
+    // console.log("linkedDreams", linkedDreams);
+    // console.log("vals", vals);
     const newNodes = uniq([n, ...vals, ...linkedDreams], "id");
     simulation.nodes(newNodes);
     simulation.alpha(1);
@@ -126,11 +125,11 @@
 
     console.log("secClickHandler", n);
     const ns = placement(n.values, n.tx, n.ty, 200);
-    const na = placement(n.attrs, n.tx, n.ty, 100);
+    const na = placement(n.linkedDreams, n.tx, n.ty, 300);
 
-    // console.log('drs', drs);
+    console.log("click", n);
     const newNodes = [n, ...ns, ...na];
-    console.log("newNodes", newNodes);
+    // console.log("ns", ns, "na", na);
     simulation.nodes(newNodes);
     simulation.alpha(1);
     // simulation.alphaMin(0.2);
