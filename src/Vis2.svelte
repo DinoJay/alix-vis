@@ -9,7 +9,9 @@
   import Alix from "./Alix.svelte";
   // import Vis from "./Vis.tmp";
   import Arrow from "./Arrow.svelte";
-  import { organizeData } from "./lib";
+  import { organizeData, rectCollide } from "./lib";
+  import App from "./App.svelte";
+  import Node from "./Node.svelte";
 
   export let data = [];
   export let objects = [];
@@ -60,23 +62,24 @@
   const tmpNodes = placement(otherData, width / 2, height / 2, 150);
   let nodes = [];
 
+  let counter = 0;
   const simulation = d3
     .forceSimulation([...tmpNodes, dreams])
-    // .alphaMin(0.9)
+    .alphaMin(0.5)
     .force("collision", d3.forceCollide((d) => d.size / 2 + 5).strength(1))
     .force("x", d3.forceX((d) => d.tx).strength(0.8))
     .force("y", d3.forceY((d) => d.ty).strength(0.8))
     .force("charge", d3.forceManyBody())
     .on("tick", () => {
+      // if (counter % 10 === 0)
       nodes = simulation.nodes();
+      // counter++;
     });
 
   let bounds = null;
-  let xx = 0;
-  let yy = 0;
   let translate;
 
-  let arrow;
+  // let dims = [];
   $: {
     bounds = [
       [
@@ -89,10 +92,11 @@
       ],
     ];
 
+    // console.log("nodes", nodes);
     const dx = bounds[1][0] - bounds[0][0];
     const dy = bounds[1][1] - bounds[0][1];
-    xx = (bounds[0][0] + bounds[1][0]) / 2;
-    yy = (bounds[0][1] + bounds[1][1]) / 2;
+    const xx = (bounds[0][0] + bounds[1][0]) / 2;
+    const yy = (bounds[0][1] + bounds[1][1]) / 2;
     // console.log("bounds", bounds);
     let scale = Math.max(
       0.1,
@@ -128,7 +132,7 @@
     const na = placement(n.linkedDreams, n.tx, n.ty, 300);
 
     console.log("click", n);
-    const newNodes = [n, ...ns, ...na];
+    const newNodes = [n, ...na, ...ns];
     // console.log("ns", ns, "na", na);
     simulation.nodes(newNodes);
     simulation.alpha(1);
@@ -150,16 +154,18 @@
   style="width:{width}px; height:{height}px;}">
   <div
     id="zoom-cont"
-    class="w-full h-full transition"
+    class="w-full h-full transition-all"
     style="transform: {translate ? `translate(${translate[0]}px, ${translate[1]}px) scale(${translate[2]})` : `translate(0%,0%)`}">
-    {#each nodes as n (n.id)}
+    {#each nodes as n, i (n.id)}
       <div
+        bind:clientWidth={nodes[i].width}
+        bind:clientHeight={nodes[i].height}
         on:click={() => {
           clickHandlers[state](n);
           state++;
         }}
         class="flex absolute  transition"
-        style="left:{n.x - n.size / 2}px; top:{n.y - n.size / 2}px; width:{n.size}px; height:{n.size}px; ">
+        style="left:{n.x - n.size / 2}px; top:{n.y - n.size / 2}px; width:{n.width}px; height:{n.height}px; ">
         <div
           class="absolute border-2 -white"
           style="width:{n.size}px; height:{n.size}px; border-color: {n.color};" />

@@ -3,6 +3,11 @@ import uniq from "lodash.uniqby";
 import { group } from "d3-array";
 // import {nest} from 'd3-collection';
 
+function constant(_) {
+  return function () {
+    return _;
+  };
+}
 const isIntersect = (setA, setB) => {
   // console.log("a", a, "b", b);
   const ret =

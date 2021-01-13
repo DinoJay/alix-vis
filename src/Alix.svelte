@@ -12,7 +12,7 @@
         ...d,
         id: i,
         title: "DreaM " + i,
-        type: "dream",
+        // type: "dream",
         // color: "#8FBC8F",
         width: 15,
         height: 15,
@@ -25,7 +25,7 @@
     .then((data) =>
       csvParse(data).map((d, i) => ({
         ...d,
-        type: "object",
+        // type: "object",
         title: "ObJecT " + i,
         // color: "#E9967A",
         width: 15,
@@ -38,7 +38,7 @@
     .then((data) =>
       csvParse(data).map((d, i) => ({
         ...d,
-        type: "person",
+        // type: "person",
         title: "PerSon " + i,
         // color: "#483D8B",
         width: 15,
@@ -53,7 +53,7 @@
         ...d,
         //TODO: why explicit?
         id: "a" + (i + 1),
-        type: "animal",
+        // type: "animal",
         title: "AnImaL " + i,
         // color: "red",
         width: 15,
@@ -69,7 +69,7 @@
         //TODO: why explicit?
         id: "a" + (i + 1),
         // id: 'vehicle',
-        type: "vehicle",
+        // type: "vehicle",
         title: "VeHiCle",
         // color: "brown",
         width: 15,
@@ -84,7 +84,7 @@
         ...d,
         //TODO: why explicit?
         // id: "a" + (i + 1),
-        type: "place",
+        // type: "place",
         // color: "yellow",
         width: 15,
         height: 15,

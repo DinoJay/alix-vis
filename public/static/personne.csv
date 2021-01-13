@@ -1,4 +1,4 @@
-id,type,caracteristique
+id,type,character
 p1,fille,grosse
 p2,mec,chinois
 p3,mec,roux
@@ -15,7 +15,7 @@ p15,mec,"asiatique, vieux"
 p18,mec,noir
 p19,mec,"gros, jeune"
 p20,mec,"bouclé, brun"
-p21,mec,"immense,deguisement,gay"
+p21,mec,"immense,deguisement,gay":w
 p23,mec,barbe
 p24,squelette,noir
 p25,squelette,blanc
