@@ -3,11 +3,6 @@ import uniq from "lodash.uniqby";
 import { group } from "d3-array";
 // import {nest} from 'd3-collection';
 
-function constant(_) {
-  return function () {
-    return _;
-  };
-}
 const isIntersect = (setA, setB) => {
   // console.log("a", a, "b", b);
   const ret =
@@ -15,6 +10,11 @@ const isIntersect = (setA, setB) => {
     setB.map((b) => setA.includes(b)).filter(Boolean).length > 0;
   return ret;
 };
+function constant(_) {
+  return function () {
+    return _;
+  };
+}
 export const rectCollide = () => {
   var nodes, sizes, masses;
   var size = constant([0, 0]);
@@ -122,7 +122,6 @@ export const rectCollide = () => {
 
   return force;
 };
-
 export const organizeData = ({
   data,
   objects,
@@ -330,7 +329,7 @@ export const organizeData = ({
           "id"
         );
       };
-      console.log("values", values);
+      // console.log("values", values);
       const tmp = values.flatMap((d) => {
         if (d[a] && d[a].includes(",")) {
           return d[a].split(",").map((b) => ({ ...d, [a]: b.trim() }));
@@ -349,11 +348,11 @@ export const organizeData = ({
         }));
       console.log("groups", groups);
 
-      const ids = groups.flatMap((d) => d.values.map((d) => d.id));
+      const attrIds = groups.flatMap((d) => d.values.map((d) => d.id));
 
       // console.log("a", a, "ids", ids, "vals", vals);
 
-      const linkedDreams = extractLinkedDreams(ids);
+      const linkedDreams = extractLinkedDreams(attrIds);
 
       console.log("linkedDreams", linkedDreams);
       return {

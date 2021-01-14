@@ -2,16 +2,21 @@
   import { onMount } from "svelte";
   // import d3_radial from "d3-radial";
   import * as d3 from "d3-force";
+  import { Delaunay } from "d3-delaunay";
+
   import uniq from "lodash.uniqby";
   // import * as z from "d3-zoom";
   import * as array from "d3-array";
   import * as sel from "d3-selection";
   import Alix from "./Alix.svelte";
   // import Vis from "./Vis.tmp";
+  import { bboxCollide } from "d3-bboxCollide";
   import Arrow from "./Arrow.svelte";
   import { organizeData, rectCollide } from "./lib";
+  import { polygonCentroid } from "d3-polygon";
   import App from "./App.svelte";
   import Node from "./Node.svelte";
+  import { null_to_empty } from "svelte/internal";
 
   export let data = [];
   export let objects = [];
@@ -34,14 +39,14 @@
   };
   // let translate = null;
   const placement = (nodes, cx, cy, r, half) => {
-    const increment = half ? 180 / (nodes.length - 1) : 360 / nodes.length;
-    let current = -90;
+    const increment = half ? 280 / (nodes.length - 1) : 360 / nodes.length;
+    let current = -140;
 
     return nodes.map((d) => {
       const [tx, ty] = radialLocation([cx, cy], current, r, r, 0);
       const [lx, ly] = radialLocation([cx, cy], current, r + 50, r + 50, 0);
       current += increment;
-      return { ...d, tx, ty, lx, ly };
+      return { ...d, tx, ty, lx, ly, angle: current };
     });
   };
 
@@ -59,17 +64,36 @@
   dreams.ty = height / 2;
   const otherData = ns.filter((n) => n.id !== "dreams");
 
-  const tmpNodes = placement(otherData, width / 2, height / 2, 150);
+  const tmpNodes = placement(otherData, width / 2, height / 2, 150, true);
   let nodes = [];
-
   let counter = 0;
+  let domNodes = [];
+  let dims = [];
   const simulation = d3
-    .forceSimulation([...tmpNodes, dreams])
-    .alphaMin(0.5)
-    .force("collision", d3.forceCollide((d) => d.size / 2 + 5).strength(1))
-    .force("x", d3.forceX((d) => d.tx).strength(0.8))
-    .force("y", d3.forceY((d) => d.ty).strength(0.8))
-    .force("charge", d3.forceManyBody())
+    .forceSimulation([...tmpNodes, dreams].map((d) => ({ ...d, w: 96, h: 30 })))
+    // .alphaMin(0.5)
+    .force(
+      "collision",
+      d3
+        .forceCollide((d) => {
+          return 5; //d.w / 2;
+        })
+        .strength(1)
+    )
+
+    // .force(
+    //   "force",
+    //   rectCollide()
+    //     .size((d) => {
+    //       return [d.w, d.h];
+    //     })
+    //     .strength(5)
+    // )
+    .force("x", d3.forceX((d) => d.tx).strength(0.4))
+    .force("y", d3.forceY((d) => d.ty).strength(0.4))
+    // .force("charge", d3.forceManyBody())
+    // .force("center", d3.forceCenter(width / 2, height / 2).strength(0.5))
+
     .on("tick", () => {
       // if (counter % 10 === 0)
       nodes = simulation.nodes();
@@ -78,9 +102,27 @@
 
   let bounds = null;
   let translate;
+  function radians_to_degrees(radians) {
+    var pi = Math.PI;
+    return radians * (180 / pi);
+  }
 
-  // let dims = [];
+  let voronoi;
+  let angles;
   $: {
+    const delaunay = Delaunay.from(nodes.map((d) => [d.x, d.y]));
+    voronoi = delaunay.voronoi([-1, -1, width + 1, height + 1]);
+    const cells = nodes.map((d, i) => [[d.x, d.y], voronoi.cellPolygon(i)]);
+    // console.log("cells", cells);
+    const angles = cells.map(([[x, y], cell]) => {
+      const [cx, cy] = polygonCentroid(cell);
+      // console.log("node", polygonCentroid(cell));
+      const angle =
+        (Math.round((Math.atan2(cy - y, cx - x) / Math.PI) * 2) + 4) % 4;
+      return radians_to_degrees(angle);
+    });
+    // console.log("angle", angles);
+
     bounds = [
       [
         array.min(nodes, (d) => d.x - d.size / 2),
@@ -92,7 +134,7 @@
       ],
     ];
 
-    // console.log("nodes", nodes);
+    console.log("nodes", nodes);
     const dx = bounds[1][0] - bounds[0][0];
     const dy = bounds[1][1] - bounds[0][1];
     const xx = (bounds[0][0] + bounds[1][0]) / 2;
@@ -108,32 +150,44 @@
 
   let state = 0;
   const firstClickHandler = (n) => {
-    n.size = !n.selected ? 120 : 25;
+    n.size = !n.selected ? 100 : 25;
+    // n.tx = 0;
+    // n.ty = 0;
     console.log("n", n);
     // console.log("groups", groups);
     // const gr = group(n.values)
 
-    const vals = placement(n.groups, n.tx, n.ty, 200);
-    const linkedDreams = placement(n.linkedDreams, n.tx, n.ty, 300);
+    const vals = placement(n.groups, n.tx, n.ty, 200, true);
+    const linkedDreams = n.linkedDreams.map((d) => ({
+      ...d,
+      tx: n.tx, //width / 2,
+      ty: n.ty, //height / 2,
+    })); //placement(n.linkedDreams, n.tx, n.ty, 300, true);
 
     // console.log("linkedDreams", linkedDreams);
     // console.log("vals", vals);
-    const newNodes = uniq([n, ...vals, ...linkedDreams], "id");
+    const newNodes = [
+      ...linkedDreams,
+      ...vals,
+      {
+        ...n,
+        tx: 0, //n.tx - 200 - n.size,
+        x: 0,
+        ty: n.ty, //height / 2 - n.size / 2,
+        y: height / 2 - n.size / 2,
+      },
+    ];
     simulation.nodes(newNodes);
     simulation.alpha(1);
     simulation.restart();
   };
-
   const secClickHandler = (n) => {
     n.size = !n.selected ? 80 : 25;
 
-    console.log("secClickHandler", n);
-    const ns = placement(n.values, n.tx, n.ty, 200);
-    const na = placement(n.linkedDreams, n.tx, n.ty, 300);
+    const ns = placement(n.values, n.tx, n.ty, 300, true);
+    const na = placement(n.linkedDreams, n.tx, n.ty, 400, true);
 
-    console.log("click", n);
     const newNodes = [n, ...na, ...ns];
-    // console.log("ns", ns, "na", na);
     simulation.nodes(newNodes);
     simulation.alpha(1);
     // simulation.alphaMin(0.2);
@@ -141,6 +195,7 @@
     // console.log('bounds', bounds);
   };
   const clickHandlers = [firstClickHandler, secClickHandler];
+  let tmp;
 </script>
 
 <style>
@@ -154,33 +209,28 @@
   style="width:{width}px; height:{height}px;}">
   <div
     id="zoom-cont"
-    class="w-full h-full transition-all"
-    style="transform: {translate ? `translate(${translate[0]}px, ${translate[1]}px) scale(${translate[2]})` : `translate(0%,0%)`}">
+    class="relative w-full h-full transition-all"
+    style="transform: {translate ? `translate(${translate[0]}px, ${translate[1]}px) scale(${translate[2]})` : `translate(0%,0%)`}; ">
+    <svg class="w-full h-full absolute"><path
+        fill="none"
+        stroke="black"
+        d={voronoi && voronoi.render()} /></svg>
     {#each nodes as n, i (n.id)}
       <div
-        bind:clientWidth={nodes[i].width}
-        bind:clientHeight={nodes[i].height}
+        bind:this={domNodes[i]}
         on:click={() => {
           clickHandlers[state](n);
           state++;
         }}
-        class="flex absolute  transition"
-        style="left:{n.x - n.size / 2}px; top:{n.y - n.size / 2}px; width:{n.width}px; height:{n.height}px; ">
-        <div
-          class="absolute border-2 -white"
-          style="width:{n.size}px; height:{n.size}px; border-color: {n.color};" />
-        <div
-          class="m-auto bg-white whitespace-nowrap"
-          style="transform: translate(-10%,-0%)">
+        class="flex absolute  overflow-visible transition border-2 -white"
+        style="left:{n.x - n.size / 2}px; top:{n.y - n.size / 2}px; width:{n.size}px; height:{n.size}px;
+        transform: rotate({angles && angles[i]}deg) translate({0}px,0)">
+        <div class="m-auto bg-white whitespace-nowrap " style="">
           {#if n.visible || n.selected}{n.title}{/if}
         </div>
       </div>
     {/each}
-    {#each nodes as n (n.id)}
-      <div
-        class="absolute  w-3 h-3"
-        style="left:{n.lx}px; top:{n.ly}px; transform: translate(-50%, -50%)" />
-    {/each}
+    <div />
 
     <!-- <div
       class="bg-black w-3 h-3 absolute"
