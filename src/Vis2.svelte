@@ -24,6 +24,11 @@
   export let animals = [];
   export let vehicles = [];
   export let places = [];
+
+  function degrees_to_radians(degrees) {
+    var pi = Math.PI;
+    return degrees * (pi / 180);
+  }
   const width = 675;
   const height = 667;
   // var spiral = d3_radial
@@ -46,7 +51,14 @@
       const [tx, ty] = radialLocation([cx, cy], current, r, r, 0);
       const [lx, ly] = radialLocation([cx, cy], current, r + 50, r + 50, 0);
       current += increment;
-      return { ...d, tx, ty, lx, ly, angle: current };
+      return {
+        ...d,
+        tx,
+        ty,
+        lx,
+        ly,
+        angle: degrees_to_radians(current),
+      };
     });
   };
 
@@ -102,25 +114,19 @@
 
   let bounds = null;
   let translate;
-  function radians_to_degrees(radians) {
-    var pi = Math.PI;
-    return radians * (180 / pi);
-  }
 
   let voronoi;
-  let angles;
   $: {
     const delaunay = Delaunay.from(nodes.map((d) => [d.x, d.y]));
     voronoi = delaunay.voronoi([-1, -1, width + 1, height + 1]);
     const cells = nodes.map((d, i) => [[d.x, d.y], voronoi.cellPolygon(i)]);
     // console.log("cells", cells);
-    const angles = cells.map(([[x, y], cell]) => {
-      const [cx, cy] = polygonCentroid(cell);
-      // console.log("node", polygonCentroid(cell));
-      const angle =
-        (Math.round((Math.atan2(cy - y, cx - x) / Math.PI) * 2) + 4) % 4;
-      return radians_to_degrees(angle);
-    });
+    // const angles = cells.map(([[x, y], cell]) => {
+    //   const [cx, cy] = polygonCentroid(cell);
+    //   // console.log("node", polygonCentroid(cell));
+    //   // const angle =
+    //   // var midAngle = d.endAngle < Math.PI ? d.startAngle/2 + d.endAngle/2 : d.startAngle/2  + d.endAngle/2 + Math.PI
+    // });
     // console.log("angle", angles);
 
     bounds = [
@@ -202,6 +208,9 @@
   #zoom-cont {
     transform-origin: 0 0;
   }
+  .trans {
+    transform-origin: 0 0;
+  }
 </style>
 
 <div
@@ -222,10 +231,12 @@
           clickHandlers[state](n);
           state++;
         }}
-        class="flex absolute  overflow-visible transition border-2 -white"
+        class=" trans flex absolute  overflow-visible transition border-2 -white"
         style="left:{n.x - n.size / 2}px; top:{n.y - n.size / 2}px; width:{n.size}px; height:{n.size}px;
-        transform: rotate({angles && angles[i]}deg) translate({0}px,0)">
-        <div class="m-auto bg-white whitespace-nowrap " style="">
+        ">
+        <div
+          class="m-auto bg-white whitespace-nowrap "
+          style="transform:rotate(-90deg) rotate({(n.angle * 180) / Math.PI}deg)  translate({0}px,0)">
           {#if n.visible || n.selected}{n.title}{/if}
         </div>
       </div>
