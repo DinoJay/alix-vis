@@ -2,7 +2,8 @@
   import { onMount } from "svelte";
   // import d3_radial from "d3-radial";
   import * as d3 from "d3-force";
-  import { Delaunay } from "d3-delaunay";
+
+  import * as shape from "d3-shape";
 
   import uniq from "lodash.uniqby";
   // import * as z from "d3-zoom";
@@ -12,12 +13,14 @@
   // import Vis from "./Vis.tmp";
   import { bboxCollide } from "d3-bboxCollide";
   import Arrow from "./Arrow.svelte";
-  import { organizeData, rectCollide } from "./lib";
+  import { organizeData } from "./lib";
   import { polygonCentroid } from "d3-polygon";
   import App from "./App.svelte";
   import Node from "./Node.svelte";
 
   import RadialLabels from "./RadialLabels.svelte";
+  const arc = shape.arc();
+  const line = shape.line();
 
   export let data = [];
   export let objects = [];
@@ -26,6 +29,8 @@
   export let vehicles = [];
   export let places = [];
 
+  const START_ANGLE = -140;
+  const END_ANGLE = 360;
   function degrees_to_radians(degrees) {
     var pi = Math.PI;
     return degrees * (pi / 180);
@@ -42,8 +47,8 @@
   };
   // let translate = null;
   const placement = (nodes, cx, cy, r, half) => {
-    const increment = 280 / (nodes.length - 1); //: 360 / nodes.length;
-    let current = -140;
+    const increment = END_ANGLE / nodes.length; //: 360 / nodes.length;
+    let current = START_ANGLE;
     const rad = degrees_to_radians(rad);
 
     return nodes.map((d, i) => {
@@ -72,38 +77,36 @@
     animals,
     persons,
   });
-  const dreams = { ...ns.find((n) => n.id === "dreams"), angle: 0 };
-  dreams.tx = width / 2;
-  dreams.ty = height / 2;
+
+  const dreams = {
+    ...ns.find((n) => n.id === "dreams"),
+    angle: 0,
+    tx: width / 2,
+    ty: height / 2,
+  };
   const otherData = ns.filter((n) => n.id !== "dreams");
 
-  const tmpNodes = placement(otherData, width / 2, height / 2, 150, true);
-  let nodes = [];
+  const r = 150;
+  let center = [width / 2, height / 2, r];
+  const tmpNodes = placement(otherData, width / 2, height / 2, r, true);
+  let nodes = [...tmpNodes, dreams];
   let counter = 0;
   let domNodes = [];
   let dims = [];
   const simulation = d3
-    .forceSimulation([...tmpNodes, dreams].map((d) => ({ ...d, w: 96, h: 30 })))
+    .forceSimulation([...nodes])
     // .alphaMin(0.5)
     .force(
       "collision",
       d3
         .forceCollide((d) => {
-          return d.size / 2; //d.w / 2;
+          return d.size; //d.w / 2;
         })
         .strength(1)
     )
 
-    // .force(
-    //   "force",
-    //   rectCollide()
-    //     .size((d) => {
-    //       return [d.w, d.h];
-    //     })
-    //     .strength(5)
-    // )
-    .force("x", d3.forceX((d) => d.tx).strength(0.4))
-    .force("y", d3.forceY((d) => d.ty).strength(0.4))
+    .force("x", d3.forceX((d) => d.tx).strength(0.2))
+    .force("y", d3.forceY((d) => d.ty).strength(0.2))
     // .force("charge", d3.forceManyBody())
     // .force("center", d3.forceCenter(width / 2, height / 2).strength(0.5))
 
@@ -116,7 +119,20 @@
   let bounds = null;
   let translate;
 
+  console.log("nodes", nodes);
+  let dreamsNode = nodes.find((d) => d.id === "dreams");
+  let level1Node = nodes.find((d) => {
+    console.log("d", d.level);
+
+    return d.level === 1;
+  });
+
   $: {
+    console.log("nodes", nodes);
+    dreamsNode = nodes.find((d) => d.id === "dreams");
+    level1Node = nodes.find((d) => d.type === 1);
+    console.log("levelNode", level1Node);
+    // console.log("dreamsNode", dreamsNode);
     // console.log("nodes", nodes);
     if (domNodes.length > 0) {
       const bbox = (i) =>
@@ -151,7 +167,7 @@
 
   let state = 0;
   const firstClickHandler = (n) => {
-    n.size = !n.selected ? 12 : 7;
+    n.size = !n.selected ? 10 : 7;
     // n.tx = 0;
     // n.ty = 0;
     console.log("n", n);
@@ -159,21 +175,33 @@
     // const gr = group(n.values)
 
     const r = 150;
-    const vals = placement(n.groups, n.tx, n.ty, r, true);
+    const xPad = 120;
+    const xPadBetween = 50;
+    const groups = placement(n.groups, n.tx, n.ty, r, true);
     const linkedDreams = n.linkedDreams.map((d) => ({
       ...d,
+      angle: 0,
       tx: n.tx, //width / 2,
       ty: n.ty, //height / 2,
+      size: 5,
     })); //placement(n.linkedDreams, n.tx, n.ty, 300, true);
 
-    // console.log("linkedDreams", linkedDreams);
-    // console.log("vals", vals);
+    center = [n.tx, n.ty, r];
     const newNodes = [
+      {
+        ...dreams,
+        size: 20,
+        x: 0,
+        tx: n.tx - r - xPad - xPadBetween,
+        ty: n.ty,
+        angle: degrees_to_radians(-230),
+      },
       ...linkedDreams,
-      ...vals,
+      ...groups,
       {
         ...n,
-        tx: n.tx - r,
+        tx: n.tx - r - xPad / 2,
+        angle: degrees_to_radians(-230),
         x: 0,
         ty: n.ty, //height / 2 - n.size / 2,
         y: height / 2 - n.size / 2,
@@ -198,7 +226,6 @@
     // console.log('bounds', bounds);
   };
   const clickHandlers = [firstClickHandler, secClickHandler];
-  let tmp;
 </script>
 
 <style>
@@ -213,37 +240,61 @@
 <div
   class="relative border border-black overflow-hidden"
   style="width:{width}px; height:{height}px;}">
-  <div
+  <svg
+    {width}
+    {height}
     id="zoom-cont"
-    class="relative w-full h-full transition-all"
+    class="left-0 top-0 absolute  overflow-visible"
     style="transform: {translate ? `translate(${translate[0]}px, ${translate[1]}px) scale(${translate[2]})` : `translate(0%,0%)`}; ">
-    <svg {width} {height} class="left-0 top-0 absolute  overflow-visible">
-      {#each nodes as n, i (n.id)}
-        <g
-          bind:this={domNodes[i]}
-          on:click={() => {
-            console.log('yeah§');
-            clickHandlers[state](n);
-            state++;
-          }}>
-          <circle
-            className="border-2"
-            r={n.size}
-            cx={n.x}
-            cy={n.y}
-            fill="black" />
-          <text
-            class={!n.visible && 'hidden'}
-            x={n.x}
-            y={n.y}
-            dy=".35em"
-            dx="0.9em"
-            text-anchor="start"
-            transform="rotate({(n.angle * 180) / Math.PI}, {n.x}, {n.y})">
-            {n.title}
-          </text>
-        </g>
-      {/each}
-    </svg>
-  </div>
+    <g transform="translate({center[0]}, {center[1]})">
+      <path
+        stroke-width="2px"
+        stroke="green"
+        fill="none"
+        d={arc({
+          innerRadius: r,
+          outerRadius: r,
+          startAngle: degrees_to_radians(START_ANGLE),
+          endAngle: degrees_to_radians(END_ANGLE),
+        })} />
+    </g>
+
+    {#if state === 1}
+      <path
+        d={line([
+          [dreamsNode.x + 15, dreamsNode.y],
+          [dreamsNode.x + 100, dreamsNode.y],
+        ])}
+        fill="none"
+        stroke-width="4px"
+        stroke="black" />
+    {/if}
+
+    {#each nodes as n, i (n.id)}
+      <g
+        class="text-green-500"
+        bind:this={domNodes[i]}
+        on:click={() => {
+          clickHandlers[state](n);
+          state++;
+        }}>
+        <circle
+          class="border-2 text-gray-500"
+          r={n.size}
+          cx={n.x}
+          cy={n.y}
+          fill="black" />
+        <text
+          class={!n.visible && 'hidden'}
+          x={n.x}
+          y={n.y}
+          dy=".35em"
+          dx={n.size + 5}
+          text-anchor="start"
+          transform="rotate({(n.angle * 180) / Math.PI}, {n.x}, {n.y})">
+          {n.title}
+        </text>
+      </g>
+    {/each}
+  </svg>
 </div>
