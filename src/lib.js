@@ -148,7 +148,7 @@ export const organizeData = ({
     ],
     displayColor: "blue",
     selected: true,
-    size: 100, //Math.min(40, objects.length),
+    size: 7, //Math.min(40, objects.length),
     // tx: width / 2,
     // ty: height / 2,
   };
@@ -158,14 +158,14 @@ export const organizeData = ({
       ...o,
       values: dreams.values.filter((d) => d.place.split(",").includes(o.id)),
       attrs: [
-        { id: "color", value: o.couleur, displayColor: "black", size: 40 },
+        { id: "color", value: o.couleur, displayColor: "black", size: 7 },
         {
           id: "characteristic",
           value: o.char,
           displayColor: "orange",
-          size: 40,
+          size: 7,
         },
-        { id: "type", value: o.type, displayColor: "cyan", size: 40 },
+        { id: "type", value: o.type, displayColor: "cyan", size: 7 },
       ],
     }))
     .concat(
@@ -182,7 +182,7 @@ export const organizeData = ({
             title: d,
             attrs: [],
             values: [],
-            size: 25,
+            size: 7,
           }))
       )
     );
@@ -192,9 +192,9 @@ export const organizeData = ({
       ...o,
       values: dreams.values.filter((d) => d.vehicle.split(",").includes(o.id)),
       attrs: [
-        { id: "color", value: o.couleur, displayColor: "black", size: 40 },
-        { id: "character", value: o.char, displayColor: "orange", size: 40 },
-        { id: "type", value: o.type, displayColor: "cyan", size: 40 },
+        { id: "color", value: o.couleur, displayColor: "black", size: 7 },
+        { id: "character", value: o.char, displayColor: "orange", size: 7 },
+        { id: "type", value: o.type, displayColor: "cyan", size: 7 },
       ],
     }))
     .concat(
@@ -222,14 +222,14 @@ export const organizeData = ({
       ...o,
       values: dreams.values.filter((d) => d.animal.split(",").includes(o.id)),
       attrs: [
-        { id: "color", value: o.couleur, displayColor: "black", size: 40 },
+        { id: "color", value: o.couleur, displayColor: "black", size: 7 },
         {
           id: "characteristic",
           value: o.char,
           displayColor: "orange",
-          size: 40,
+          size: 7,
         },
-        { id: "type", value: o.type, displayColor: "cyan", size: 40 },
+        { id: "type", value: o.type, displayColor: "cyan", size: 7 },
       ],
     }))
     .concat(
@@ -247,7 +247,7 @@ export const organizeData = ({
             title: d,
             values: [],
             attrs: [],
-            size: 25,
+            size: 7,
           }))
       )
     );
@@ -257,8 +257,8 @@ export const organizeData = ({
       ...o,
       values: dreams.values.filter((d) => d.person.split(",").includes(o.id)),
       attrs: [
-        { id: "character", value: o.char, displayColor: "orange", size: 40 },
-        { id: "type", value: o.type, displayColor: "cyan", size: 40 },
+        { id: "character", value: o.char, displayColor: "orange", size: 7 },
+        { id: "type", value: o.type, displayColor: "cyan", size: 7 },
       ],
     }))
     .concat(
@@ -276,7 +276,7 @@ export const organizeData = ({
             title: d,
             attrs: [],
             values: [],
-            size: 25,
+            size: 7,
           }))
       )
     );
@@ -286,15 +286,15 @@ export const organizeData = ({
       ...o,
       displayColor: "blue",
       attrs: [
-        { id: "color", value: o.couleur, displayColor: "black", size: 40 },
+        { id: "color", value: o.couleur, displayColor: "black", size: 7 },
         {
           id: "characteristic",
           value: o.character,
           displayColor: "orange",
-          size: 40,
+          size: 7,
         },
-        { id: "type", value: o.type, displayColor: "cyan", size: 40 },
-        { id: "category", value: o.categorie, displayColor: "brown", size: 40 },
+        { id: "type", value: o.type, displayColor: "cyan", size: 7 },
+        { id: "category", value: o.categorie, displayColor: "brown", size: 7 },
       ],
       values: dreams.values.filter((d) => d.object.split(",").includes(o.id)),
     }))
@@ -313,7 +313,7 @@ export const organizeData = ({
             title: d,
             values: [],
             attrs: [],
-            size: 25,
+            size: 7,
           }))
       )
     );
@@ -344,7 +344,7 @@ export const organizeData = ({
           linkedDreams: extractLinkedDreams(values.map((d) => d.id)),
           title: id,
           visible: true,
-          size: 25,
+          size: 7,
         }));
       console.log("groups", groups);
 
@@ -361,7 +361,7 @@ export const organizeData = ({
         linkedDreams,
         visible: true,
         title: a,
-        size: 50,
+        size: 7,
       };
     });
   return [
@@ -380,7 +380,7 @@ export const organizeData = ({
       ),
       visible: true,
       displayColor: "blue",
-      size: 40, //Math.min(40, objects.length),
+      size: 7, //Math.min(40, objects.length),
     },
     {
       id: "persons",
@@ -396,7 +396,7 @@ export const organizeData = ({
       ),
       visible: true,
       displayColor: "green",
-      size: 40, //Math.min(40, persons.length),
+      size: 7, //Math.min(40, persons.length),
     },
     {
       id: "animals",
@@ -412,7 +412,7 @@ export const organizeData = ({
       ),
       visible: true,
       displayColor: "brown",
-      size: 40, //Math.min(40, animals.length),
+      size: 7, //Math.min(40, animals.length),
     },
     {
       id: "vehicles",
@@ -428,7 +428,7 @@ export const organizeData = ({
       ),
       visible: true,
       displayColor: "red",
-      size: 40, //Math.max(40, vehicles.length),
+      size: 7, //Math.max(40, vehicles.length),
     },
     {
       id: "places",
@@ -444,7 +444,7 @@ export const organizeData = ({
         ),
         "id"
       ),
-      size: 40, //Math.max(40, places.length),
+      size: 7, //Math.max(40, places.length),
     },
   ];
 };

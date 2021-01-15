@@ -16,7 +16,7 @@
         // color: "#8FBC8F",
         width: 15,
         height: 15,
-        size: 25,
+        size: 7,
       }))
     );
 
@@ -27,6 +27,7 @@
         ...d,
         // type: "object",
         title: "ObJecT " + i,
+        size: 7,
         // color: "#E9967A",
         width: 15,
         size: 25,
@@ -42,7 +43,7 @@
         title: "PerSon " + i,
         // color: "#483D8B",
         width: 15,
-        size: 25,
+        size: 7,
         height: 15,
       }))
     );
@@ -57,7 +58,7 @@
         title: "AnImaL " + i,
         // color: "red",
         width: 15,
-        size: 25,
+        size: 7,
         height: 15,
       }))
     );
@@ -73,7 +74,7 @@
         title: "VeHiCle",
         // color: "brown",
         width: 15,
-        size: 25,
+        size: 7,
         height: 15,
       }))
     );
@@ -88,7 +89,7 @@
         // color: "yellow",
         width: 15,
         height: 15,
-        size: 25,
+        size: 7,
       }))
     );
   const promise = Promise.all([
