@@ -158,7 +158,7 @@
     // console.log("groups", groups);
     // const gr = group(n.values)
 
-    const r = 200;
+    const r = 150;
     const vals = placement(n.groups, n.tx, n.ty, r, true);
     const linkedDreams = n.linkedDreams.map((d) => ({
       ...d,
@@ -187,10 +187,10 @@
     n.size = !n.selected ? 12 : 7;
     const ls = n.linkedDreams.map((d) => ({ ...d, visible: false }));
 
-    const ns = placement(n.values, n.tx, n.ty, 300, true);
+    const ns = placement(n.values, n.tx, n.ty, 200, true);
     const na = placement(ls, n.tx, n.ty, 0, true);
 
-    const newNodes = [{ ...n, tx: 300, ty: height / 2 }, ...na, ...ns];
+    const newNodes = [{ ...n, tx: 200, ty: height / 2 }, ...na, ...ns];
     simulation.nodes(newNodes);
     simulation.alpha(1);
     // simulation.alphaMin(0.2);
