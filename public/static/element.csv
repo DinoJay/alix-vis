@@ -1,0 +1,140 @@
+id,color,character,material
+animaux,,"magie, petit",lumiere
+ascenseur,,"architecture, vieux, beau",acier
+assiette,,sale,
+bar,,sous terre,
+boite,,rectangle,plastique
+borne automatique,jaune,,
+boule,gris,poil,
+bouteille ,,oxygene,plastique
+bouton,rouge,chien,
+bras,,coupé,
+cadavre,,"calciné, coupé",
+cadre,,,bois
+camion,blanc,cassé,plastique
+carrelage,vert,,
+carte,"jaune, brun, argenté","cheveux, petit",
+casier,,rectangle,
+casquette,"bleu, turquoise",,
+chaise,bleu,"foncé, ecole, cassé",
+chalet,,moderne,
+chambre,,"sous terre, propre, rangé",
+chat,"noir, roux, blanc, beige, gris","motif, mini",
+chateau,,"vieux, flottant",
+chemise,"rouge, blanc, bleu",carreau,
+cheval,"vert, bleu","perruque, enorme",plastique
+cheveux ,blond,long,
+chien ,"beige, gris",,
+cirque,"vert, violet, gris",,
+cloison,bleu,diagonal,
+collant ,"rose, blanc",,
+combi,orange,plongeur,
+concombre,,moitié,
+corps,,mou,
+couverture,bleu,,
+cravate,,fleur,
+culotte,violet,,
+debardeur,"blanc, orange, noir",pois,
+dent ,"blanc, noir",,
+doigt ,,"coupé, moitié",
+dortoire,,sombre,bois
+dragon,,dessin,
+echelle,,,corde
+ecole,,"dessin, jardinage, magie",
+escalier ,blanc,"petit, beton, art deco, vieux, beau",bois
+espace,,enorme,
+estrade,rouge,,terre
+etiquette,"bleu, orange",,
+evier,,enorme,
+facade,,,bois
+feuille,blanc,"journal, papyrus",
+fille,"roux, blond, brun","grosse, raid, beau, jeune, bouclé, petit, cassé, princesse, long, metisse, mort",
+fontaine,vert,,
+galerie,doré,couvert,
+gare,,fantastique,
+grille,blanc,enorme,fer
+hall,,musée,
+hotel,,carré,
+ile,,flottant,
+immeuble,"blanc, gris, violet, rouge, vert, orange","cylindrique, vieux, architecture, foncé",
+jambe,,coupé,
+jardin,,"grand, petit",
+jupe,,long,
+legging,,motif,
+liquide,vert,,
+livre,blanc,cassé,
+loup,,enorme,
+lumiere,jaune,,
+lunette,bleu,"nuit, rond, fin, plongeur",
+magasin,,"ski, patisserie, parfum, art",
+maison,"vert, kaki, bleu, jaune, marron, gris","degradé, cylindrique, ancien, grand, enorme, vieux, sombre, beau, sous terre, moderne","acier, pierre"
+mangue,,coupé,
+manoir,,"rond, petit",
+maquillage,"rose, bleu, rouge, vert","ombre paupiere, rouge à levre, vernis",pailette
+matelas ,,"voiture, moitié",
+materiel,,dessin,
+mec,"roux, noir, brun","chinois, gay, beau, mini, vieux, asiatique, jeune, bouclé, grand, gros, barbe, transforme, amoureux",
+mur,,,"transparent, verre, eau"
+neon,"violet, bleu",,
+objet,blanc,,lumiere
+oignon,rouge,,
+panier,,mini,
+parc,vert,"ecole, cimetiere, sombre",
+parking,,glauque,
+patisserie,,carotte,
+pave,blanc,,
+perroquet,rouge,mort,
+piece,"rose, noir, vert, doré","fantastique, calfetré",pailette
+pieuvre,,enorme,
+pipette,,,plastique
+piramide,,,verre
+plumeau,bleu,"cassé, magie",
+pont,blanc,"fin, grand, suspendu",fer
+port,,vieux,
+porte,bleu ,"enorme, foncé, camion, petit",bois
+post it,rose,coeur,
+pourte,,grand,
+pull,"jaune, rouge",,
+quatier,,"glauque, bizarre, residentiel",
+rampe,,,beton
+robe,"doré, blanc",,paillette
+rocher,"ocre, gris","lisse, pointu, coupant",
+rue,"vert, gris","petit, sombre",
+sac,,,"plastique, tissu"
+salle,"doré, blanc","danse, rond, verre",
+salle a manger,,grand,
+salle de bain,,cassé,
+salon,,mauvais gout,
+sextoy,blanc,,
+short,,motif,
+sol,"blanc, vert",,
+squelette,"noir, blanc",,
+statue,noir,"enorme, loup",bronze
+studio,,long,
+sweet,"bleu, turquoise",,
+table,,petit,
+tableau,,grand,
+tampon,bleu,,lumiere
+tente,,petit,
+terrain de foot,,mini,
+terrasse,,,verre
+tete,,coupé,
+tissu,rouge,grand,
+toilette ,,cassé,
+toit,,plame,
+tong,noir,petit,plastique
+trappe,rouge,,plastique
+tshirt,blanc,,"transparent, brillant"
+uniforme,rouge,,
+vache,,mort,
+vague,,"enorme, droit",
+valise,,rectangle,
+velo,,,plastique
+ventre,,gros,
+verre,,mini,plastique
+vetement ,"bleu, rouge, blanc, vert","sale, sport",
+viande,,pourrie,
+village,,sombre,
+ville,"gris, marron, jaune, orange, blanc","sombre, petit, grand, fantastique, vieux, beau",
+voiture,"rose, jaune, orange, vert","petit, police",fluo
+yeux,,enorme,
