@@ -42,19 +42,23 @@ export const organizeData = ({ dreams: rawData, objects }) => {
 
   // const dreamData = rawData
 
-  const elements = [...group(spreadData, (d) => d.type)].map(
-    ([id, values]) => ({
+  const elements = [...group(spreadData, (d) => d.type)].map(([id, values]) => {
+    const vals = [...group(values, (d) => d.id)].map(([id, values]) => {
+      const links = attrs.reduce((acc, a) => ({ ...acc, [a]: [] }), {});
+      values.forEach((d) =>
+        attrs.map((a) => {
+          links[a] = uniq([...links[a], ...d.links[a]], (d) => d);
+        })
+      );
+      const numLinks = Object.values(links).flat().length;
+      return { id, links, title: id, strength: numLinks };
+    });
+
+    return {
       id,
+      strength: values.length,
       //TODO: get links
-      values: [...group(values, (d) => d.id)].map(([id, values]) => {
-        const links = attrs.reduce((acc, a) => ({ ...acc, [a]: [] }), {});
-        values.forEach((d) =>
-          attrs.map((a) => {
-            links[a] = [...links[a], ...d.links[a]];
-          })
-        );
-        return { id, links, title: id };
-      }),
+      values: uniq(vals, "id"),
       // .filter((d) => d.id)
       // .map((d, i) => ({
       //   ...d,
@@ -66,8 +70,7 @@ export const organizeData = ({ dreams: rawData, objects }) => {
       //   //   "id"
       //   // ),
       // })),
-    })
-  );
-  console.log("elements", elements);
+    };
+  });
   return elements;
 };

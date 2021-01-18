@@ -5,6 +5,7 @@
   // import d3_radial from "d3-radial";
   import * as d3 from "d3-force";
   import RadialLabels from "./RadialLabels.svelte";
+  import * as sc from "d3-scale";
 
   import * as shape from "d3-shape";
 
@@ -59,12 +60,19 @@
     const increment = (endAngle - startAngle) / nodes.length; //: 360 / nodes.length;
     let current = startAngle;
     const rad = degrees_to_radians(rad);
+    const scale = sc
+      .scaleRadial()
+      .domain(array.extent(nodes, (d) => d.strength))
+      .range([r + 50, 50]);
 
+    const maxStrength = 1 / array.max(nodes, (d) => d.strength);
     return nodes.map((d, i) => {
       const angle = degrees_to_radians(current);
+      const strength = 1 / d.strength;
+      const radius = scale(d.strength); //((r / 6) * strength) / maxStrength;
       // const angle = (i / (nodes.length / 2) - 1) * Math.PI;
       const angleDeg = current;
-      const [tx, ty] = radialLocation([cx, cy], angle, r, r, 0);
+      const [tx, ty] = radialLocation([cx, cy], angle, radius, radius, 0);
       current += increment;
       return {
         ...d,
@@ -92,10 +100,19 @@
   const r = 150;
   let center = [width / 2, height / 2, r];
   let nodes = placement(data, width / 2, height / 2, r);
+  const dreamNode = {
+    values: allData,
+    angle: 0,
+    id: "dreams",
+    title: "Dreams",
+    tx: width / 2,
+    ty: height / 2,
+    size: 12,
+  };
   let domNodes = [];
 
   const simulation = d3
-    .forceSimulation([...nodes])
+    .forceSimulation([...nodes, dreamNode])
     // .alphaMin(0.5)
     .force(
       "collision",
