@@ -15,10 +15,9 @@
   import * as sel from "d3-selection";
   import Alix from "./Alix.svelte";
   // import Vis from "./Vis.tmp";
-  import { bboxCollide } from "d3-bboxCollide";
+  // import { bboxCollide } from "d3-bboxCollide";
   import Arrow from "./Arrow.svelte";
   import { organizeData } from "./lib";
-  import { polygonCentroid } from "d3-polygon";
   import App from "./App.svelte";
   import Node from "./Node.svelte";
 
@@ -38,6 +37,24 @@
     var pi = Math.PI;
     return radians * (180 / pi);
   }
+
+  function collide(nodeBox, otherBox) {
+    const nodeLeft = nodeBox.x;
+    const nodeRight = nodeBox.x + nodeBox.width;
+    const nodeTop = nodeBox.y;
+    const nodeBottom = nodeBox.y + nodeBox.height;
+
+    const otherLeft = otherBox.x;
+    const otherRight = otherBox.x + otherBox.width;
+    const otherTop = otherBox.y;
+    const otherBottom = otherBox.y + otherBox.height;
+
+    const collideHoriz = nodeLeft < otherRight && nodeRight > otherLeft;
+    const collideVert = nodeTop < otherBottom && nodeBottom > otherTop;
+
+    return collideHoriz && collideVert;
+  }
+
   const width = 775;
   const height = 667;
   // var spiral = d3_radial
@@ -61,7 +78,10 @@
     let current = startAngle;
     const rad = degrees_to_radians(rad);
     const scale = sc
-      .scaleRadial()
+
+      .scalePow()
+      .exponent(0.1)
+      // .scaleSqrt()
       .domain(array.extent(nodes, (d) => d.strength))
       .range([r + 50, 50]);
 
@@ -70,7 +90,6 @@
       const angle = degrees_to_radians(current);
       const strength = 1 / d.strength;
       const radius = scale(d.strength); //((r / 6) * strength) / maxStrength;
-      // const angle = (i / (nodes.length / 2) - 1) * Math.PI;
       const angleDeg = current;
       const [tx, ty] = radialLocation([cx, cy], angle, radius, radius, 0);
       current += increment;
@@ -92,7 +111,8 @@
     ...d,
     values: d.values.map((d) => ({ ...d, element: true })),
     initial: true,
-    title: d.id,
+    visible: true,
+    // title: d.id,
     size: 7,
   }));
   const allData = data.flatMap((d) => d.values);
@@ -107,20 +127,25 @@
     title: "Dreams",
     tx: width / 2,
     ty: height / 2,
+    x: width / 2,
+    y: height / 2,
+    visible: true,
     size: 12,
   };
   let domNodes = [];
+  let textNodes = [];
 
   const simulation = d3
     .forceSimulation([...nodes, dreamNode])
-    // .alphaMin(0.5)
+    .alphaMin(0.6)
+    .tick(1)
     .force(
       "collision",
       d3
         .forceCollide((d) => {
-          return d.size; //d.w / 2;
+          return d.size + 1; //d.w / 2;
         })
-        .strength(1)
+        .strength(3)
     )
 
     .force("x", d3.forceX((d) => d.tx).strength(0.2))
@@ -131,12 +156,34 @@
     .on("tick", () => {
       // if (counter % 10 === 0)
       nodes = simulation.nodes();
+      nodes.forEach((n) => {
+        n.visible = true;
+      });
       // counter++;
+    })
+    .on("end", () => {
+      // textNodes.map((n, i) => {
+      //   const ns = textNodes.filter((o, j) => {
+      //     return (
+      //       nodes[i].id !== nodes[j].id && collide(n.getBBox(), o.getBBox())
+      //     );
+      //   });
+      //   console.log("ns", ns);
+      //   if (!nodes[i].taken && ns.length > 0) {
+      //     console.log("yeah", n.id);
+      //     nodes[i].visible = false;
+      //     nodes[i].taken = true;
+      //   }
+      //   // else n.visible = true;
+      // });
     });
 
   let bounds = null;
   let translate;
 
+  function inCircle(x, y, cx, cy, radius) {
+    return (x - cx) * (x - cx) + (y - cy) * (y - cy) < radius * radius;
+  }
   $: {
     if (domNodes.length > 0) {
       const bbox = (i) =>
@@ -179,7 +226,7 @@
     }));
 
     center = [n.tx, n.ty, r];
-    const newNodes = [n, ...groups];
+    const newNodes = [...groups, n];
     simulation.nodes(newNodes);
     simulation.alpha(1);
     simulation.restart();
@@ -199,15 +246,23 @@
       Object.entries(n.links)
         .flatMap(([type, values]) =>
           values.map((v) => {
-            return { ...allData.find((d) => d.id === v), size };
+            // console.log("allData", allData);
+            const ob = allData.find((d) => d.id === v);
+            // console.log("ob", ob);
+            return { ...ob, size };
           })
         )
         .filter((e) => e.id !== n.id),
       "id"
     );
-    console.log("elems", elems);
+    // console.log("elems", elems);
 
-    const elemNodes = placement(elems, width / 2, height / 2, getRadius(elems));
+    const elemNodes = placement(
+      elems,
+      width / 2,
+      height / 2,
+      getRadius(elems) / 2
+    );
 
     const newNodes = uniq(
       [{ ...n, tx: width / 2, ty: height / 2 }, ...elemNodes],
@@ -306,31 +361,35 @@
         })} />
     </g>
 
-    {#each nodes as n, i (n.id)}
-      <g
-        class="text-green-500"
-        bind:this={domNodes[i]}
-        on:click={() => {
-          if (n.initial) return initialClickHandler(n);
-          if (n.element) return elementClickHandler(n);
-        }}>
-        <circle
-          class="stroke-current stroke-2 text-blue-500"
-          r={n.size}
-          cx={n.x}
-          cy={n.y}
-          fill="white" />
-        <text
-          font-size="12px"
-          x={n.x}
-          y={n.y}
-          dy=".35em"
-          dx={n.size + 5}
-          text-anchor="start"
-          transform="rotate({(n.angle * 180) / Math.PI}, {n.x}, {n.y})">
-          {n.title}
-        </text>
-      </g>
-    {/each}
+    <g>
+      {#each nodes as n, i (n.id)}
+        <g
+          class="text-green-500"
+          bind:this={domNodes[i]}
+          on:click={() => {
+            if (n.initial) return initialClickHandler(n);
+            if (n.element) return elementClickHandler(n);
+          }}>
+          <circle
+            class="stroke-current stroke-2 text-blue-500"
+            r={n.size}
+            cx={n.x}
+            cy={n.y}
+            fill="white" />
+          <text
+            bind:this={textNodes[i]}
+            class={!n.visible && 'hidden'}
+            font-size="12px"
+            x={n.x}
+            y={n.y}
+            dy=".35em"
+            dx={n.size + 5}
+            text-anchor="start"
+            transform="rotate({(n.angle * 180) / Math.PI}, {n.x}, {n.y})">
+            {n.title}
+          </text>
+        </g>
+      {/each}
+    </g>
   </svg>
 </div>

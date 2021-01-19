@@ -47,18 +47,19 @@ export const organizeData = ({ dreams: rawData, objects }) => {
       const links = attrs.reduce((acc, a) => ({ ...acc, [a]: [] }), {});
       values.forEach((d) =>
         attrs.map((a) => {
-          links[a] = uniq([...links[a], ...d.links[a]], (d) => d);
+          links[a] = [...links[a], ...d.links[a]];
         })
       );
       const numLinks = Object.values(links).flat().length;
-      return { id, links, title: id, strength: numLinks };
+      return { id: id, visible: true, links, title: id, strength: numLinks };
     });
 
     return {
-      id,
+      id: id + " group",
+      title: id,
       strength: values.length,
       //TODO: get links
-      values: uniq(vals, "id"),
+      values: vals,
       // .filter((d) => d.id)
       // .map((d, i) => ({
       //   ...d,

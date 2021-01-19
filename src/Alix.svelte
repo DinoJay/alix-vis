@@ -2,7 +2,6 @@
   import Vis from "./Vis2.svelte";
   import { onMount } from "svelte";
   import { csvParse } from "d3-dsv";
-  import { group } from "d3-array";
 
   const key = "bWA5AlcAzMfYGBYhlinMvf1rmP5Kt33j";
 
