@@ -50,6 +50,12 @@ export const organizeData = ({ dreams: rawData, objects }) => {
           links[a] = [...links[a], ...d.links[a]];
         })
       );
+
+      // values.forEach(d => {
+      //   d.links
+
+      // })
+
       const numLinks = Object.values(links).flat().length;
       return { id: id, visible: true, links, title: id, strength: numLinks };
     });

@@ -120,6 +120,7 @@
   const r = 150;
   let center = [width / 2, height / 2, r];
   let nodes = placement(data, width / 2, height / 2, r);
+
   const dreamNode = {
     values: allData,
     angle: 0,
@@ -133,17 +134,16 @@
     size: 20,
   };
   let domNodes = [];
-  let textNodes = [];
 
   const simulation = d3
     .forceSimulation([...nodes, dreamNode])
-    .alphaMin(0.6)
-    .tick(1)
+    // .alphaMin(0.6)
+    // .tick(1)
     .force(
       "collision",
       d3
         .forceCollide((d) => {
-          return d.size + 1; //d.w / 2;
+          return d.size + 2; //d.w / 2;
         })
         .strength(3)
     )
@@ -207,9 +207,9 @@
         Math.min(20, 0.9 / Math.max(dx / width, dy / height))
       );
 
+      // console.log("nodes", nodes);
       translate = [width / 2 - scale * xx, height / 2 - scale * yy, scale];
     }
-    console.log("nodes", nodes);
   }
 
   let state = 0;
@@ -245,27 +245,34 @@
         [...group(values, (d) => d)].map(([id, values]) => {
           // console.log("allData", allData);
           const ob = allData.find((d) => d.id === id);
-          const i = allData.findIndex((d) => d.id === id);
-          // console.log("ob", ob);
-          return { ...ob, size, strength: values.length };
+          return {
+            ...ob,
+            strength: values.length,
+          };
         })
       )
       .filter((e) => e.id !== n.id);
 
     const gr = group(elems, (d) => d.id);
-    console.log("gr", gr);
-    console.log("elems", elems);
+    // console.log("gr", gr);
+    // console.log("elems", elems);
 
-    const elemNodes = placement(
-      elems,
-      width / 2,
-      height / 2,
-      getRadius(elems) / 2
+    console.log("elems", elems);
+    const r = getRadius(elems) / (elems.length > 200 ? 2 : 1);
+    const elemNodes = placement(elems, width / 2, height / 2, r);
+
+    const domain = array.extent(elemNodes, (d) =>
+      d.links ? Object.values(d.links).flat().length : 0
     );
-    console.log("elemNodes", elemNodes);
+    const sizeScale = sc.scaleLinear().domain(domain).range([1, 7]);
+    elemNodes.forEach((d) => {
+      d.size = d.links
+        ? sizeScale(Object.values(d.links).flat().length)
+        : d.values.length;
+    });
 
     const newNodes = uniq(
-      [{ ...n, tx: width / 2, ty: height / 2 }, ...elemNodes],
+      [{ ...n, angle: 0, tx: width / 2, ty: height / 2 }, ...elemNodes],
       "id"
     );
     simulation.nodes(newNodes);
@@ -367,6 +374,7 @@
         <g
           bind:this={domNodes[i]}
           on:click={() => {
+            state++;
             if (n.initial) return initialClickHandler(n);
             if (n.element) return elementClickHandler(n);
           }}>
@@ -377,8 +385,7 @@
             cy={n.y}
             fill="white" />
           <text
-            bind:this={textNodes[i]}
-            class={!n.visible ? 'hidden' : undefined}
+            class={n.size < 1.4 ? 'hidden' : undefined}
             font-size="12px"
             x={n.x}
             y={n.y}
