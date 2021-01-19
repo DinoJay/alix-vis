@@ -78,7 +78,6 @@
     let current = startAngle;
     const rad = degrees_to_radians(rad);
     const scale = sc
-
       .scalePow()
       .exponent(0.1)
       // .scaleSqrt()
@@ -99,6 +98,7 @@
         ty,
         angle,
         angleDeg,
+        // visible: i % 2,
       };
     });
   };
@@ -107,11 +107,11 @@
     dreams,
     objects,
   });
-  const data = rawData.map((d) => ({
+  const data = rawData.map((d, i) => ({
     ...d,
     values: d.values.map((d) => ({ ...d, element: true })),
     initial: true,
-    visible: true,
+    visible: false,
     // title: d.id,
     size: 7,
   }));
@@ -130,7 +130,7 @@
     x: width / 2,
     y: height / 2,
     visible: true,
-    size: 12,
+    size: 20,
   };
   let domNodes = [];
   let textNodes = [];
@@ -156,9 +156,9 @@
     .on("tick", () => {
       // if (counter % 10 === 0)
       nodes = simulation.nodes();
-      nodes.forEach((n) => {
-        n.visible = true;
-      });
+      // nodes.forEach((n) => {
+      //   n.visible = true;
+      // });
       // counter++;
     })
     .on("end", () => {
@@ -181,9 +181,6 @@
   let bounds = null;
   let translate;
 
-  function inCircle(x, y, cx, cy, radius) {
-    return (x - cx) * (x - cx) + (y - cy) * (y - cy) < radius * radius;
-  }
   $: {
     if (domNodes.length > 0) {
       const bbox = (i) =>
@@ -212,9 +209,11 @@
 
       translate = [width / 2 - scale * xx, height / 2 - scale * yy, scale];
     }
+    console.log("nodes", nodes);
   }
 
   let state = 0;
+  const size = 2;
   const initialClickHandler = (n) => {
     console.log("initialClickHandler", n);
 
@@ -222,7 +221,7 @@
 
     const groups = placement(n.values, n.tx, n.ty, r).map((d) => ({
       ...d,
-      size: 3,
+      size,
     }));
 
     center = [n.tx, n.ty, r];
@@ -233,7 +232,6 @@
   };
 
   let prevAngle = 0;
-  const size = 7;
   const getRadius = (values) => {
     const circum = values.length * (size + 2) * 2; //2 * Math.PI * r
     const r = Math.max(150, circum / (Math.PI * 2));
@@ -242,20 +240,21 @@
   const elementClickHandler = (n) => {
     console.log("elementClickHandler", n);
 
-    const elems = uniq(
-      Object.entries(n.links)
-        .flatMap(([type, values]) =>
-          values.map((v) => {
-            // console.log("allData", allData);
-            const ob = allData.find((d) => d.id === v);
-            // console.log("ob", ob);
-            return { ...ob, size };
-          })
-        )
-        .filter((e) => e.id !== n.id),
-      "id"
-    );
-    // console.log("elems", elems);
+    const elems = Object.entries(n.links)
+      .flatMap(([type, values]) =>
+        [...group(values, (d) => d)].map(([id, values]) => {
+          // console.log("allData", allData);
+          const ob = allData.find((d) => d.id === id);
+          const i = allData.findIndex((d) => d.id === id);
+          // console.log("ob", ob);
+          return { ...ob, size, strength: values.length };
+        })
+      )
+      .filter((e) => e.id !== n.id);
+
+    const gr = group(elems, (d) => d.id);
+    console.log("gr", gr);
+    console.log("elems", elems);
 
     const elemNodes = placement(
       elems,
@@ -263,6 +262,7 @@
       height / 2,
       getRadius(elems) / 2
     );
+    console.log("elemNodes", elemNodes);
 
     const newNodes = uniq(
       [{ ...n, tx: width / 2, ty: height / 2 }, ...elemNodes],
@@ -273,47 +273,48 @@
     simulation.restart();
   };
 
-  const categoryHandler = (n) => {
-    console.log("categoryHandler", n);
-    // n.size = !n.selected ? 12 : 7;
+  // const categoryHandler = (n) => {
+  //   console.log("categoryHandler", n);
+  //   // n.size = !n.selected ? 12 : 7;
 
-    const values = uniq(
-      Object.entries(n.links)
-        .flatMap(([type, entries]) => {
-          return entries.map((id) => ({
-            ...allData.find((e) => e.id === id),
-            id,
-            type,
-            links: { [type]: entries },
-            size,
-            // visible: false,
-          }));
-        })
-        .filter((d) => d.id !== n.id),
-      "id"
-    );
+  //   const values = uniq(
+  //     Object.entries(n.links)
+  //       .flatMap(([type, entries]) => {
+  //         return entries.map((id) => ({
+  //           ...allData.find((e) => e.id === id),
+  //           id,
+  //           type,
+  //           links: { [type]: entries },
+  //           size,
+  //           visible: false,
+  //         }));
+  //       })
+  //       .filter((d) => d.id !== n.id),
+  //     "id"
+  //   );
 
-    const r0 = getRadius(values);
-    console.log("r0", r0);
+  //   const r0 = getRadius(values);
+  //   console.log("r0", r0);
+  //   console.log("valueNodes", valueNodes);
 
-    const dist = 500; //Math.max(r0 * 8, 25);
-    console.log("dist", dist);
+  //   const dist = 500; //Math.max(r0 * 8, 25);
+  //   console.log("dist", dist);
 
-    const [nx, ny] = radialLocation([n.x, n.y], 0, dist, dist, 0);
-    const valueNodes = placement(
-      values,
-      width / 2,
-      height / 2,
-      r0
-      // radians_to_degrees(n.angle)
-      // radians_to_degrees(n.angle) + 20
-    );
+  //   const [nx, ny] = radialLocation([n.x, n.y], 0, dist, dist, 0);
+  //   const valueNodes = placement(
+  //     values,
+  //     width / 2,
+  //     height / 2,
+  //     r0
+  //     // radians_to_degrees(n.angle)
+  //     // radians_to_degrees(n.angle) + 20
+  //   );
 
-    const newNodes = uniq([...nodes, ...valueNodes], "id");
-    simulation.nodes(newNodes);
-    simulation.alpha(1);
-    simulation.restart();
-  };
+  //   const newNodes = uniq([...nodes, ...valueNodes], "id");
+  //   simulation.nodes(newNodes);
+  //   simulation.alpha(1);
+  //   simulation.restart();
+  // };
 </script>
 
 <style>
@@ -364,7 +365,6 @@
     <g>
       {#each nodes as n, i (n.id)}
         <g
-          class="text-green-500"
           bind:this={domNodes[i]}
           on:click={() => {
             if (n.initial) return initialClickHandler(n);
@@ -378,7 +378,7 @@
             fill="white" />
           <text
             bind:this={textNodes[i]}
-            class={!n.visible && 'hidden'}
+            class={!n.visible ? 'hidden' : undefined}
             font-size="12px"
             x={n.x}
             y={n.y}
