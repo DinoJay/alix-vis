@@ -107,6 +107,9 @@
         tx,
         ty,
         angle,
+        radius,
+        maxRadius: r,
+        dist: r - radius,
         angleDeg,
         // visible: i % 2,
       };
@@ -221,7 +224,6 @@
       voronoi = delaunay.voronoi([-100, -100, width + 100, height + 100]);
 
       cells = ds.map((d, i) => [d, voronoi.cellPolygon(i)]);
-      console.log("cells", cells);
     }
   }
 
@@ -350,10 +352,57 @@
     if (!cell) return 0;
     const [cx, cy] = polygonCentroid(cell);
     const angle = (Math.atan2(cy - y, cx - x) / Math.PI) * 2;
-    return radians_to_degrees(angle);
+
+    const angleRounded =
+      (Math.round((Math.atan2(cy - y, cx - x) / Math.PI) * 2) + 4) % 4;
+    return angleRounded === 0
+      ? "right"
+      : angleRounded === 3
+      ? "top"
+      : angleRounded === 1
+      ? "bottom"
+      : "left";
+    // return radians_to_degrees(angle);
     // const dist = getDistance([cx, cy], [x, y]);
     // console.log("dist", dist);
     // return dist;
+  };
+
+  const orientTextAnchor = {
+    top: "middle",
+    right: "start",
+    bottom: "middle",
+    left: "end",
+  };
+
+  const orientDy = {
+    right: "0.35em",
+    bottom: "0.70em",
+    left: "0.35em",
+  };
+
+  const orientY = (n) => ({
+    top: -n.size,
+    right: 0,
+    left: 0,
+    bottom: n.size,
+  });
+  const orientX = (n) => ({
+    top: 0,
+    bottom: 0,
+    right: 0, //n.size/2,
+    left: -n.size,
+  });
+  const getRotate = (n) => {
+    return `rotate(${(n.angle * 180) / Math.PI}, ${n.x}, ${n.y})`;
+  };
+  const getXOffset = (n, i) => {
+    const ret = n.dist > 10 && cells[i] ? orientX(n)[getAngle(cells[i])] : 0;
+    return ret;
+  };
+  const getYOffset = (n, i) => {
+    const ret = n.dist > 10 && cells[i] ? orientY(n)[getAngle(cells[i])] : 0;
+    return ret;
   };
 </script>
 
@@ -423,13 +472,14 @@
             style="opacity: 0.5"
             class={cells[i] && getSize(cells[i]) < 1000 && 'hidden'}
             font-size="10px"
-            x={n.x}
-            y={n.y}
-            dy=".35em"
+            x={n.x + getXOffset(n, i)}
+            y={n.y + getYOffset(n, i)}
+            dy={n.dist > 10 && cells[i] ? orientDy[getAngle(cells[i])] : 0}
             dx={n.size + 5}
-            text-anchor="start"
-            transform="rotate({cells[i] && getSize(cells[i]) < 2000 ? getAngle(cells[i]) : (n.angle * 180) / Math.PI}, {n.x}, {n.y})">
+            text-anchor={n.dist > 10 && cells[i] && orientTextAnchor[getAngle(cells[i])]}
+            transform={n.dist < 20 ? getRotate(n) : ''}>
             {n.title}
+            <!-- rotate({cells[i] && getSize(cells[i]) > 2000 ? getAngle(cells[i]) : (n.angle * 180) / Math.PI}, {n.x}, {n.y}) -->
           </text>
           <title>{n.title}</title>
         </g>
