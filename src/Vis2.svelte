@@ -18,8 +18,7 @@
   import Alix from "./Alix.svelte";
   // import Vis from "./Vis.tmp";
   // import { bboxCollide } from "d3-bboxCollide";
-  import Arrow from "./Arrow.svelte";
-  import { organizeData } from "./lib";
+  import { organizeData, colors } from "./lib";
   import App from "./App.svelte";
   import Node from "./Node.svelte";
 
@@ -92,7 +91,7 @@
       .exponent(0.1)
       // .scaleSqrt()
       .domain(array.extent(nodes, (d) => d.strength))
-      .range([r + 50, 20]);
+      .range([r + 50, 50]);
 
     const maxStrength = 1 / array.max(nodes, (d) => d.strength);
     return nodes.map((d, i) => {
@@ -129,6 +128,7 @@
     size: 7,
   }));
   const allData = data.flatMap((d) => d.values);
+  console.log("allData", allData);
 
   const r = 150;
   let center = [width / 2, height / 2, r];
@@ -159,7 +159,7 @@
       "collision",
       d3
         .forceCollide((d) => {
-          return d.size + 2; //d.w / 2;
+          return d.size + 3; //d.w / 2;
         })
         .strength(3)
     )
@@ -264,8 +264,15 @@
         [...group(values, (d) => d)].map(([id, values]) => {
           // console.log("allData", allData);
           const ob = allData.find((d) => d.id === id);
+          const n = nodes.find((n) => n.id === id) || {
+            x: width / 2,
+            y: height / 2,
+          };
           return {
             ...ob,
+            x: n.x,
+            y: n.y,
+
             strength: values.length,
           };
         })
@@ -283,7 +290,7 @@
     const domain = array.extent(elemNodes, (d) =>
       d.links ? Object.values(d.links).flat().length : 0
     );
-    const sizeScale = sc.scaleLinear().domain(domain).range([0.5, 10]);
+    const sizeScale = sc.scaleLinear().domain(domain).range([1, 10]);
     elemNodes.forEach((d) => {
       d.size = d.links
         ? sizeScale(Object.values(d.links).flat().length)
@@ -302,48 +309,6 @@
     simulation.restart();
   };
 
-  // const categoryHandler = (n) => {
-  //   console.log("categoryHandler", n);
-  //   // n.size = !n.selected ? 12 : 7;
-
-  //   const values = uniq(
-  //     Object.entries(n.links)
-  //       .flatMap(([type, entries]) => {
-  //         return entries.map((id) => ({
-  //           ...allData.find((e) => e.id === id),
-  //           id,
-  //           type,
-  //           links: { [type]: entries },
-  //           size,
-  //           visible: false,
-  //         }));
-  //       })
-  //       .filter((d) => d.id !== n.id),
-  //     "id"
-  //   );
-
-  //   const r0 = getRadius(values);
-  //   console.log("r0", r0);
-  //   console.log("valueNodes", valueNodes);
-
-  //   const dist = 500; //Math.max(r0 * 8, 25);
-  //   console.log("dist", dist);
-
-  //   const [nx, ny] = radialLocation([n.x, n.y], 0, dist, dist, 0);
-  //   const valueNodes = placement(
-  //     values,
-  //     width / 2,
-  //     height / 2,
-  //     r0
-  //     // radians_to_degrees(n.angle)
-  //     // radians_to_degrees(n.angle) + 20
-  //   );
-
-  //   const newNodes = uniq([...nodes, ...valueNodes], "id");
-  //   simulation.nodes(newNodes);
-  //   simulation.alpha(1);
-  //   simulation.restart();
-  // };
   const getSize = ([[x, y], cell]) => {
     if (!cell) return 0;
     const area = -polygonArea(cell);
@@ -395,7 +360,7 @@
     top: 0,
     bottom: 0,
     right: 0, //n.size/2,
-    left: -n.size,
+    left: Math.min(-n.size, -7),
   });
   const getRotate = (n) => {
     return `rotate(${(n.angle * 180) / Math.PI}, ${n.x}, ${n.y})`;
@@ -444,12 +409,11 @@
     </defs>
     <g transform="translate({center[0]}, {center[1]})">
       <path
-        class="hidden stroke-current text-gray-500"
+        class="hidden fill-current text-gray-500"
         stroke-width="2px"
-        fill="none"
         d={arc({
           innerRadius: r,
-          outerRadius: r,
+          outerRadius: 50,
           startAngle: degrees_to_radians(START_ANGLE),
           endAngle: degrees_to_radians(END_ANGLE),
         })} />
@@ -458,11 +422,16 @@
     <g>
       {#each nodes as n, i (n.id)}
         <circle
-          class=" opacity-50 fill-current text-blue-500"
+          on:click={() => {
+            state++;
+            if (n.initial) return initialClickHandler(n);
+            if (n.element) return elementClickHandler(n);
+          }}
+          class=" opacity-70 "
+          fill={colors[n.type]}
           r={n.size}
           cx={n.x}
-          cy={n.y}
-          fill="white" />
+          cy={n.y} />
       {/each}
       {#each nodes as n, i (n.id)}
         <g
@@ -473,14 +442,15 @@
           }}>
           <text
             bind:this={domNodes[i]}
-            class={(cells[i] && getSize(cells[i]) < 1000 && 'hidden') + ' text-gray-700'}
+            class={cells[i] && getSize(cells[i]) < 1000 && 'hidden'}
+            fill={colors[n.type]}
             font-size="10px"
             x={n.x + getXOffset(n, i)}
             y={n.y + getYOffset(n, i)}
             dy={n.dist > 10 && cells[i] ? orientDy[getAngle(cells[i])] : '0.35em'}
             dx={n.size + 1}
             text-anchor={n.dist > 10 && cells[i] && orientTextAnchor[getAngle(cells[i])]}
-            transform={n.dist < 20 ? getRotate(n) : ''}>
+            transform={n.dist < 20 && nodes.length > 10 ? getRotate(n) : ''}>
             {n.title}
           </text>
           <title>{n.title}</title>
