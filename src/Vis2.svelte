@@ -144,6 +144,9 @@
     x: width / 2,
     y: height / 2,
     visible: true,
+    r: 0,
+    dist: r,
+    maxRadius: r,
     size: 20,
   };
   let domNodes = [];
@@ -222,6 +225,7 @@
       const ds = nodes.map((d) => [d.x, d.y]);
       const delaunay = Delaunay.from(ds);
       voronoi = delaunay.voronoi([-100, -100, width + 100, height + 100]);
+      console.log("nodes", nodes);
 
       cells = ds.map((d, i) => [d, voronoi.cellPolygon(i)]);
     }
@@ -279,7 +283,7 @@
     const domain = array.extent(elemNodes, (d) =>
       d.links ? Object.values(d.links).flat().length : 0
     );
-    const sizeScale = sc.scaleLinear().domain(domain).range([1, 7]);
+    const sizeScale = sc.scaleLinear().domain(domain).range([0.5, 10]);
     elemNodes.forEach((d) => {
       d.size = d.links
         ? sizeScale(Object.values(d.links).flat().length)
@@ -382,9 +386,9 @@
   };
 
   const orientY = (n) => ({
-    top: -n.size,
-    right: 0,
-    left: 0,
+    top: -n.size - 1,
+    right: n.size + 1,
+    left: -n.size,
     bottom: n.size,
   });
   const orientX = (n) => ({
@@ -454,7 +458,7 @@
     <g>
       {#each nodes as n, i (n.id)}
         <circle
-          class="stroke-current stroke-2 text-blue-500"
+          class=" opacity-50 fill-current text-blue-500"
           r={n.size}
           cx={n.x}
           cy={n.y}
@@ -469,23 +473,21 @@
           }}>
           <text
             bind:this={domNodes[i]}
-            style="opacity: 0.5"
-            class={cells[i] && getSize(cells[i]) < 1000 && 'hidden'}
+            class={(cells[i] && getSize(cells[i]) < 1000 && 'hidden') + ' text-gray-700'}
             font-size="10px"
             x={n.x + getXOffset(n, i)}
             y={n.y + getYOffset(n, i)}
-            dy={n.dist > 10 && cells[i] ? orientDy[getAngle(cells[i])] : 0}
-            dx={n.size + 5}
+            dy={n.dist > 10 && cells[i] ? orientDy[getAngle(cells[i])] : '0.35em'}
+            dx={n.size + 1}
             text-anchor={n.dist > 10 && cells[i] && orientTextAnchor[getAngle(cells[i])]}
             transform={n.dist < 20 ? getRotate(n) : ''}>
             {n.title}
-            <!-- rotate({cells[i] && getSize(cells[i]) > 2000 ? getAngle(cells[i]) : (n.angle * 180) / Math.PI}, {n.x}, {n.y}) -->
           </text>
           <title>{n.title}</title>
         </g>
       {/each}
     </g>
 
-    <path fill="none" stroke="black" d={voronoi && voronoi.render()} />
+    <path fill="none" stroke="none" d={voronoi && voronoi.render()} />
   </svg>
 </div>
