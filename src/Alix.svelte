@@ -3,8 +3,6 @@
   import { onMount } from "svelte";
   import { csvParse } from "d3-dsv";
 
-  const key = "bWA5AlcAzMfYGBYhlinMvf1rmP5Kt33j";
-
   const dreamData = fetch("static/dreams.csv")
     .then((response) => response.text())
     .then((data) =>

@@ -298,7 +298,14 @@
 
     const newNodes = uniq(
       [
-        { ...n, selected: true, size: 20, tx: width / 2, ty: height / 2 },
+        {
+          ...n,
+          selected: true,
+          angle: degrees_to_radians(90),
+          size: 20,
+          tx: width / 2,
+          ty: height / 2,
+        },
         ...elemNodes,
       ],
       "id"
@@ -350,22 +357,22 @@
   };
 
   const orientY = (n) => ({
-    top: -n.size - 1,
-    right: n.size + 1,
-    left: -n.size,
-    bottom: n.size,
+    top: -n.size - 3,
+    right: n.size + 2,
+    left: -n.size - 2,
+    bottom: n.size + 2,
   });
   const orientX = (n) => ({
     top: 0,
     bottom: 0,
     right: 0, //n.size/2,
-    left: Math.min(-n.size, -7),
+    left: Math.min(-n.size * 2, -7),
   });
   const getRotate = (n) => {
     return `rotate(${(n.angle * 180) / Math.PI}, ${n.x}, ${n.y})`;
   };
   const getXOffset = (n, i) => {
-    const ret = n.dist > 10 && cells[i] ? orientX(n)[getAngle(cells[i])] : 0;
+    const ret = n.dist > 10 && cells[i] ? orientX(n)[getAngle(cells[i])] : 2;
     return ret;
   };
   const getYOffset = (n, i) => {
@@ -428,14 +435,15 @@
           <text
             bind:this={domNodes[i]}
             class={' cursor-pointer'}
+            font-weight={n.selected ? 'bold' : ''}
             fill={colors[n.type]}
-            font-size="10px"
-            x={n.x + getXOffset(n, i)}
-            y={n.y + getYOffset(n, i)}
+            font-size={n.selected ? '12px' : '10px'}
+            x={n.x}
+            y={n.y}
             dy={n.dist > 10 && cells[i] ? orientDy[getAngle(cells[i])] : '0.35em'}
             dx={n.size + 1}
             text-anchor={n.dist > 10 && cells[i] && orientTextAnchor[getAngle(cells[i])]}
-            transform={n.dist < 20 && nodes.length > 10 ? getRotate(n) : ''}>
+            transform={`${!n.selected && n.dist < 20 && nodes.length > 10 ? getRotate(n) : ''} translate(${getXOffset(n, i)}, ${getYOffset(n, i)})`}>
             {#if !(cells[i] && getSize(cells[i]) < 1000)}{n.title}{/if}
           </text>
           <title>{n.title}</title>
