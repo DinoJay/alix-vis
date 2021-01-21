@@ -153,7 +153,7 @@
 
   const simulation = d3
     .forceSimulation([...nodes, dreamNode])
-    .alphaMin(0.6)
+    // .alphaMin(0.6)
     // .tick(1)
     .force(
       "collision",
@@ -283,7 +283,6 @@
     // console.log("gr", gr);
     // console.log("elems", elems);
 
-    console.log("elems", elems);
     const r = getRadius(elems) / (elems.length > 200 ? 1.5 : 1);
     const elemNodes = placement(elems, width / 2, height / 2, r);
 
@@ -299,7 +298,7 @@
 
     const newNodes = uniq(
       [
-        { ...n, angle: 0, size: 20, tx: width / 2, ty: height / 2 },
+        { ...n, selected: true, size: 20, tx: width / 2, ty: height / 2 },
         ...elemNodes,
       ],
       "id"
@@ -427,7 +426,7 @@
             if (n.initial) return initialClickHandler(n);
             if (n.element) return elementClickHandler(n);
           }}
-          class=" opacity-70 "
+          class=" opacity-70 cursor-pointer stroke-current border-black"
           fill={colors[n.type]}
           r={n.size}
           cx={n.x}
@@ -442,7 +441,7 @@
           }}>
           <text
             bind:this={domNodes[i]}
-            class={cells[i] && getSize(cells[i]) < 1000 && 'hidden'}
+            class={' cursor-pointer'}
             fill={colors[n.type]}
             font-size="10px"
             x={n.x + getXOffset(n, i)}
@@ -451,7 +450,7 @@
             dx={n.size + 1}
             text-anchor={n.dist > 10 && cells[i] && orientTextAnchor[getAngle(cells[i])]}
             transform={n.dist < 20 && nodes.length > 10 ? getRotate(n) : ''}>
-            {n.title}
+            {#if !(cells[i] && getSize(cells[i]) < 1000)}{n.title}{/if}
           </text>
           <title>{n.title}</title>
         </g>
