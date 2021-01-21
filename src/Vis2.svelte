@@ -405,6 +405,13 @@
           fill="red"
           class="fill-current text-blue-500" />
       </marker>
+      <filter x="0" y="0" width="1.1" height="1.1" id="solid">
+        <feFlood flood-color="white" result="bg" />
+        <feMerge>
+          <feMergeNode in="bg" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
     </defs>
     <g transform="translate({center[0]}, {center[1]})">
       <path
@@ -440,6 +447,7 @@
             if (n.element) return elementClickHandler(n);
           }}>
           <text
+            filter="url(#solid)"
             bind:this={domNodes[i]}
             class={' cursor-pointer'}
             fill={colors[n.type]}
