@@ -72,24 +72,49 @@ export const organizeData = ({ dreams: rawData, objects }) => {
     "object",
     "clothing",
   ];
-  const spreadData = rawData.flatMap((d) => {
-    const links = attrs.reduce((acc, a) => {
-      const ls = d[a]
-        .split(",")
-        .filter(Boolean)
-        .map((d) => d.trim())
-        .filter((e) => e.id !== d.id);
+  const elemAttrs = ["color", "character", "material"];
+  console.log("objects", objects);
+  const spreadData = [...rawData, ...objects].flatMap((d) => {
+    const links = [...attrs, ...elemAttrs].reduce((acc, a) => {
+      let ls;
+      // if (a === "element") {
+      //   const elemId = d[a];
+      //   const element = objects.find((d) => d.id === elemId);
+      //   if (element) {
+      //     ls = elemAttrs.flatMap((ea) =>
+      //       element[ea]
+      //         .split(",")
+      //         .map((d) => d.trim())
+      //         .filter(Boolean)
+      //         .filter((e) => e.id !== d.id)
+      //     );
+      //     console.log("ls", ls);
+      //   } else ls = [];
+      // } else {
+      ls = d[a]
+        ? d[a]
+            .split(",")
+            .filter(Boolean)
+            .map((d) => d.trim())
+            .filter((e) => e.id !== d.id)
+        : [];
+      // }
       return { ...acc, [a]: ls };
     }, {});
+    // console.log("links", links);
 
-    return attrs.flatMap((a) => {
-      const strs = d[a].split(",").map((d) => d.trim());
+    return [...attrs, ...elemAttrs].flatMap((a) => {
+      const strs = d[a] ? d[a].split(",").map((d) => d.trim()) : [];
       return strs.filter(Boolean).map((id) => {
         return { type: a, id: id, links };
       });
     });
   });
 
+  console.log(
+    "spreadData",
+    spreadData.filter((s) => s.type === "character")
+  );
   // const dreamData = rawData
 
   const elements = [...group(spreadData, (d) => d.type)].map(

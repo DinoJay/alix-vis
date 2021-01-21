@@ -256,9 +256,7 @@
     const r = Math.max(150, circum / (Math.PI * 2));
     return r;
   };
-  const elementClickHandler = (n) => {
-    console.log("elementClickHandler", n);
-
+  const extractElems = (n, allData) => {
     const elems = Object.entries(n.links)
       .flatMap(([type, values]) =>
         [...group(values, (d) => d)].map(([id, values]) => {
@@ -279,10 +277,6 @@
       )
       .filter((e) => e.id !== n.id);
 
-    const gr = group(elems, (d) => d.id);
-    // console.log("gr", gr);
-    // console.log("elems", elems);
-
     const r = getRadius(elems) / (elems.length > 200 ? 1.5 : 1);
     const elemNodes = placement(elems, width / 2, height / 2, r);
 
@@ -295,6 +289,11 @@
         ? sizeScale(Object.values(d.links).flat().length)
         : d.values.length;
     });
+    return elemNodes;
+  };
+  const elementClickHandler = (n) => {
+    console.log("elementClickHandler", n);
+    const elemNodes = extractElems(n, allData);
 
     const newNodes = uniq(
       [
@@ -397,20 +396,8 @@
     {width}
     {height}
     id="zoom-cont"
-    class="left-0 top-0 absolute  overflow-visible"
+    class="left-0 top-0 absolute overflow-visible"
     style="transform: {translate ? `translate(${translate[0]}px, ${translate[1]}px) scale(${translate[2]})` : `translate(0%,0%)`}; ">
-    <g transform="translate({center[0]}, {center[1]})">
-      <path
-        class="hidden fill-current text-gray-500"
-        stroke-width="2px"
-        d={arc({
-          innerRadius: r,
-          outerRadius: 50,
-          startAngle: degrees_to_radians(START_ANGLE),
-          endAngle: degrees_to_radians(END_ANGLE),
-        })} />
-    </g>
-
     <g>
       {#each nodes as n, i (n.id)}
         <circle
