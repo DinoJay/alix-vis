@@ -64,8 +64,8 @@
     return collideHoriz && collideVert;
   }
 
-  const width = 775;
-  const height = 775;
+  const width = 875;
+  const height = 875;
   // var spiral = d3_radial
   //   .spiral([width / 2, height / 2])
   //   .increment(10)
@@ -153,7 +153,7 @@
 
   const simulation = d3
     .forceSimulation([...nodes, dreamNode])
-    // .alphaMin(0.6)
+    .alphaMin(0.5)
     // .tick(1)
     .force(
       "collision",
@@ -392,27 +392,6 @@
     id="zoom-cont"
     class="left-0 top-0 absolute  overflow-visible"
     style="transform: {translate ? `translate(${translate[0]}px, ${translate[1]}px) scale(${translate[2]})` : `translate(0%,0%)`}; ">
-    <defs>
-      <marker
-        id="head"
-        orient="auto"
-        markerWidth="6"
-        markerHeight="8"
-        refX="0.1"
-        refY="2">
-        <path
-          d="M0,0 V4 L5,2 Z"
-          fill="red"
-          class="fill-current text-blue-500" />
-      </marker>
-      <filter x="0" y="0" width="1.1" height="1.1" id="solid">
-        <feFlood flood-color="white" result="bg" />
-        <feMerge>
-          <feMergeNode in="bg" />
-          <feMergeNode in="SourceGraphic" />
-        </feMerge>
-      </filter>
-    </defs>
     <g transform="translate({center[0]}, {center[1]})">
       <path
         class="hidden fill-current text-gray-500"
@@ -433,7 +412,7 @@
             if (n.initial) return initialClickHandler(n);
             if (n.element) return elementClickHandler(n);
           }}
-          class=" opacity-70 cursor-pointer stroke-current border-black"
+          class="opacity-70 cursor-pointer stroke-current border-black"
           fill={colors[n.type]}
           r={n.size}
           cx={n.x}
@@ -447,7 +426,6 @@
             if (n.element) return elementClickHandler(n);
           }}>
           <text
-            filter="url(#solid)"
             bind:this={domNodes[i]}
             class={' cursor-pointer'}
             fill={colors[n.type]}
