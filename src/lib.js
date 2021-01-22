@@ -106,27 +106,33 @@ export const organizeData = ({ dreams: rawData, objects }) => {
     return [...attrs, ...elemAttrs].flatMap((a) => {
       const strs = d[a] ? d[a].split(",").map((d) => d.trim()) : [];
       return strs.filter(Boolean).map((id) => {
-        return { type: a, id: id, links };
+        return { type: a, id, links };
       });
     });
   });
 
-  console.log(
-    "spreadData",
-    spreadData.filter((s) => s.type === "character")
-  );
+  console.log("spreadData", spreadData);
   // const dreamData = rawData
 
   const elements = [...group(spreadData, (d) => d.type)].map(
     ([type, values]) => {
       const vals = [...group(values, (d) => d.id)].map(([id, values]) => {
-        const links = attrs.reduce((acc, a) => ({ ...acc, [a]: [] }), {});
+        const links = [...attrs, ...elemAttrs].reduce(
+          (acc, a) => ({ ...acc, [a]: [] }),
+          {}
+        );
         const objVals = values[0];
         values.forEach((d) =>
-          attrs.map((a) => {
+          [...attrs, ...elemAttrs].map((a) => {
             links[a] = [...links[a], ...d.links[a]];
           })
         );
+        values.forEach((d) =>
+          elemAttrs.map((a) => {
+            links.element = [...links.element, ...links[a]];
+          })
+        );
+        if (type === "color") console.log("color values", links);
 
         // values.forEach(d => {
         //   d.links
@@ -165,5 +171,6 @@ export const organizeData = ({ dreams: rawData, objects }) => {
       };
     }
   );
+  console.log("elements", elements);
   return elements;
 };
