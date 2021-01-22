@@ -47,23 +47,6 @@
     return Math.abs(c);
   };
 
-  function collide(nodeBox, otherBox) {
-    const nodeLeft = nodeBox.x;
-    const nodeRight = nodeBox.x + nodeBox.width;
-    const nodeTop = nodeBox.y;
-    const nodeBottom = nodeBox.y + nodeBox.height;
-
-    const otherLeft = otherBox.x;
-    const otherRight = otherBox.x + otherBox.width;
-    const otherTop = otherBox.y;
-    const otherBottom = otherBox.y + otherBox.height;
-
-    const collideHoriz = nodeLeft < otherRight && nodeRight > otherLeft;
-    const collideVert = nodeTop < otherBottom && nodeBottom > otherTop;
-
-    return collideHoriz && collideVert;
-  }
-
   const width = 875;
   const height = 875;
   // var spiral = d3_radial
@@ -127,8 +110,11 @@
     // title: d.id,
     size: 7,
   }));
-  const allData = data.flatMap((d) => d.values);
-  console.log("allData", allData);
+  const allData = [...data.flatMap((d) => d.values)];
+  console.log(
+    "allData",
+    allData.filter((d) => d.type === "character")
+  );
 
   const r = 150;
   let center = [width / 2, height / 2, r];
@@ -225,7 +211,6 @@
       const ds = nodes.map((d) => [d.x, d.y]);
       const delaunay = Delaunay.from(ds);
       voronoi = delaunay.voronoi([-100, -100, width + 100, height + 100]);
-      console.log("nodes", nodes);
 
       cells = ds.map((d, i) => [d, voronoi.cellPolygon(i)]);
     }
@@ -261,7 +246,16 @@
       .flatMap(([type, values]) =>
         [...group(values, (d) => d)].map(([id, values]) => {
           // console.log("allData", allData);
-          const ob = allData.find((d) => d.id === id);
+          const ob = allData.find((d) => d.id == id);
+          if (!ob)
+            console.log(
+              "ob",
+              id,
+              ob,
+              "allData",
+              allData,
+              allData.find((d) => d.id === "bouteille")
+            );
           const n = nodes.find((n) => n.id === id) || {
             x: width / 2,
             y: height / 2,
@@ -278,7 +272,9 @@
       .filter((e) => e.id !== n.id);
 
     const r = getRadius(elems) / (elems.length > 200 ? 1.5 : 1);
-    const elemNodes = placement(elems, width / 2, height / 2, r);
+    console.log("elems", elems);
+    const elemNodes = placement(elems, width / 2, height / 2, r, 0, 360);
+    console.log("r", r, "elemNodes", elemNodes);
 
     const domain = array.extent(elemNodes, (d) =>
       d.links ? Object.values(d.links).flat().length : 0

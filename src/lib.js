@@ -11,6 +11,9 @@ export const types = [
   "ambiance",
   "object",
   "element",
+  "color",
+  "character",
+  "material",
 ];
 const cs = [
   "#1f77b4",
@@ -60,7 +63,7 @@ const isIntersect = (setA, setB) => {
     setB.map((b) => setA.includes(b)).filter(Boolean).length > 0;
   return ret;
 };
-export const organizeData = ({ dreams: rawData, objects }) => {
+export const organizeData = ({ dreams: rawData, objects: rawObjects }) => {
   const attrs = [
     "place",
     "person",
@@ -73,35 +76,43 @@ export const organizeData = ({ dreams: rawData, objects }) => {
     "clothing",
   ];
   const elemAttrs = ["color", "character", "material"];
-  console.log("objects", objects);
+  const objects = rawObjects.map((d) => ({ ...d, kind: "object" }));
+  const extractElems = (a, id) =>
+    a
+      .split(",")
+      .filter(Boolean)
+      .map((d) => d.trim())
+      .filter((e) => e.id !== id);
   const spreadData = [...rawData, ...objects].flatMap((d) => {
     const links = [...attrs, ...elemAttrs].reduce((acc, a) => {
-      let ls;
-      // if (a === "element") {
-      //   const elemId = d[a];
-      //   const element = objects.find((d) => d.id === elemId);
-      //   if (element) {
-      //     ls = elemAttrs.flatMap((ea) =>
-      //       element[ea]
-      //         .split(",")
-      //         .map((d) => d.trim())
-      //         .filter(Boolean)
-      //         .filter((e) => e.id !== d.id)
-      //     );
-      //     console.log("ls", ls);
-      //   } else ls = [];
-      // } else {
-      ls = d[a]
-        ? d[a]
-            .split(",")
-            .filter(Boolean)
-            .map((d) => d.trim())
-            .filter((e) => e.id !== d.id)
-        : [];
+      let ls = d[a] ? extractElems(d[a], d.id) : [];
+
+      let newAcc = acc;
+      if (a === "element" || a === "object") {
+        const el = objects.find((o) => o.id === d[a]);
+        if (el) {
+          const tmpLs = elemAttrs.reduce((acc, a) => {
+            const elems = extractElems(el[a], null);
+            if (elems.length > 1) {
+              return { ...acc, [a]: elems };
+            }
+            return acc;
+          }, {});
+          newAcc = { ...acc, ...tmpLs };
+        }
+      }
+
+      // if (elemAttrs.includes(a)) {
+      //   const objs = d[a]
+      //     ? objects.filter((e) => ls.includes(e[a])).map((d) => d.id)
+      //     : [];
+      //   console.log("objs", objs);
+      //   newAcc = { ...acc, element: objs };
       // }
-      return { ...acc, [a]: ls };
+
+      return { [a]: ls, ...newAcc };
     }, {});
-    // console.log("links", links);
+    console.log("links", links);
 
     return [...attrs, ...elemAttrs].flatMap((a) => {
       const strs = d[a] ? d[a].split(",").map((d) => d.trim()) : [];
@@ -111,7 +122,10 @@ export const organizeData = ({ dreams: rawData, objects }) => {
     });
   });
 
-  console.log("spreadData", spreadData);
+  console.log(
+    "spreadData",
+    spreadData.find((d) => d.id === "petit")
+  );
   // const dreamData = rawData
 
   const elements = [...group(spreadData, (d) => d.type)].map(
@@ -124,15 +138,10 @@ export const organizeData = ({ dreams: rawData, objects }) => {
         const objVals = values[0];
         values.forEach((d) =>
           [...attrs, ...elemAttrs].map((a) => {
-            links[a] = [...links[a], ...d.links[a]];
+            links[a] = [...links[a], ...(d.links[a] || [])];
           })
         );
-        values.forEach((d) =>
-          elemAttrs.map((a) => {
-            links.element = [...links.element, ...links[a]];
-          })
-        );
-        if (type === "color") console.log("color values", links);
+        // if (type === "element") console.log(id, "color values", links);
 
         // values.forEach(d => {
         //   d.links
