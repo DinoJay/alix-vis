@@ -38,6 +38,8 @@ const cs1 = [
   "#ff9da7",
   "#9c755f",
   "#bab0ab",
+  "#7f7f7f",
+  "#b15928",
 ];
 export const colors = cs1.reduce(
   (acc, d, i) => ({ ...acc, [types[i]]: d }),
@@ -63,72 +65,61 @@ const isIntersect = (setA, setB) => {
     setB.map((b) => setA.includes(b)).filter(Boolean).length > 0;
   return ret;
 };
-export const organizeData = ({ dreams: rawData, objects: rawObjects }) => {
-  const attrs = [
-    "place",
-    "person",
-    "element",
-    "body",
-    "vehicle",
-    "animal",
-    "ambiance",
-    "object",
-    "clothing",
-  ];
-  const elemAttrs = ["color", "character", "material"];
-  const objects = rawObjects.map((d) => ({ ...d, kind: "object" }));
-  const extractElems = (a, id) =>
-    a
-      .split(",")
-      .filter(Boolean)
-      .map((d) => d.trim())
-      .filter((e) => e.id !== id);
-  const spreadData = [...rawData, ...objects].flatMap((d) => {
-    const links = [...attrs, ...elemAttrs].reduce((acc, a) => {
-      let ls = d[a] ? extractElems(d[a], d.id) : [];
+const attrs = [
+  "place",
+  "person",
+  "element",
+  "body",
+  "vehicle",
+  "animal",
+  "ambiance",
+  "object",
+  "clothing",
+];
+const elemAttrs = ["color", "character", "material"];
+const extractElems = (a, id) => {
+  if (a === undefined) return [];
+  return a
+    .split(",")
+    .filter(Boolean)
+    .map((d) => d.trim())
+    .filter((e) => id === undefined || e.id !== id);
+};
+export const organizeData = ({ dreams: rawData, objects }) => {
+  const data = rawData.concat(
+    objects.map((d) => {
+      const selectedAttr = attrs.find((a) =>
+        rawData.find((e) => extractElems(e[a]).includes(d.id))
+      );
+      console.log(
+        "selectedAttr",
+        d.id,
+        attrs.filter((a) =>
+          rawData.find((e) => extractElems(e[a]).includes(d.id))
+        )
+      );
+      let ret = {};
+      if (selectedAttr) ret = { [selectedAttr]: d.id };
 
-      let newAcc = acc;
-      if (a === "element" || a === "object") {
-        const el = objects.find((o) => o.id === d[a]);
-        if (el) {
-          const tmpLs = elemAttrs.reduce((acc, a) => {
-            const elems = extractElems(el[a], null);
-            if (elems.length > 1) {
-              return { ...acc, [a]: elems };
-            }
-            return acc;
-          }, {});
-          newAcc = { ...acc, ...tmpLs };
-        }
-      }
-
-      // if (elemAttrs.includes(a)) {
-      //   const objs = d[a]
-      //     ? objects.filter((e) => ls.includes(e[a])).map((d) => d.id)
-      //     : [];
-      //   console.log("objs", objs);
-      //   newAcc = { ...acc, element: objs };
-      // }
-
-      return { [a]: ls, ...newAcc };
+      return { ...d, object: d.id, ...ret, id: undefined };
+    })
+  );
+  const spreadData = [...data].flatMap((d) => {
+    const links = [...attrs, ...elemAttrs].reduce((acc, attr) => {
+      const v = d[attr];
+      let ls = v ? extractElems(v, d.id) : [];
+      return { [attr]: ls, ...acc };
     }, {});
-    console.log("links", links);
 
     return [...attrs, ...elemAttrs].flatMap((a) => {
-      const strs = d[a] ? d[a].split(",").map((d) => d.trim()) : [];
+      const strs = extractElems(d[a]);
       return strs.filter(Boolean).map((id) => {
         return { type: a, id, links };
       });
     });
   });
 
-  console.log(
-    "spreadData",
-    spreadData.find((d) => d.id === "petit")
-  );
-  // const dreamData = rawData
-
-  const elements = [...group(spreadData, (d) => d.type)].map(
+  const elements = [...group([...spreadData], (d) => d.type)].map(
     ([type, values]) => {
       const vals = [...group(values, (d) => d.id)].map(([id, values]) => {
         const links = [...attrs, ...elemAttrs].reduce(
@@ -141,12 +132,6 @@ export const organizeData = ({ dreams: rawData, objects: rawObjects }) => {
             links[a] = [...links[a], ...(d.links[a] || [])];
           })
         );
-        // if (type === "element") console.log(id, "color values", links);
-
-        // values.forEach(d => {
-        //   d.links
-
-        // })
 
         const numLinks = Object.values(links).flat().length;
         return {
@@ -155,7 +140,7 @@ export const organizeData = ({ dreams: rawData, objects: rawObjects }) => {
           visible: true,
           links,
           title: id,
-          strength: numLinks,
+          strength: 1,
         };
       });
 
@@ -163,7 +148,7 @@ export const organizeData = ({ dreams: rawData, objects: rawObjects }) => {
         id: type + " group",
         type,
         title: type,
-        strength: values.length,
+        strength: 1,
         //TODO: get links
         values: vals,
         // .filter((d) => d.id)

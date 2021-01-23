@@ -47,6 +47,11 @@
     return Math.abs(c);
   };
 
+  const getRadius = (values) => {
+    const circum = values.length * (size + 1) * 2; //2 * Math.PI * r
+    const r = Math.max(150, circum / (Math.PI * 2));
+    return r;
+  };
   const width = 875;
   const height = 875;
   // var spiral = d3_radial
@@ -110,13 +115,12 @@
     // title: d.id,
     size: 7,
   }));
-  const allData = [...data.flatMap((d) => d.values)];
-  console.log(
-    "allData",
-    allData.filter((d) => d.type === "character")
-  );
+  const allData = uniq([...data.flatMap((d) => d.values)], "id").map((d) => ({
+    ...d,
+    size: 8,
+  }));
 
-  const r = 150;
+  const r = getRadius(data);
   let center = [width / 2, height / 2, r];
   let nodes = placement(data, width / 2, height / 2, r);
 
@@ -228,7 +232,7 @@
       size,
     }));
 
-    center = [n.tx, n.ty, r];
+    center = [width / 2, height / 2, r];
     const newNodes = [...groups, n];
     simulation.nodes(newNodes);
     simulation.alpha(1);
@@ -236,26 +240,12 @@
   };
 
   let prevAngle = 0;
-  const getRadius = (values) => {
-    const circum = values.length * (size + 1) * 2; //2 * Math.PI * r
-    const r = Math.max(150, circum / (Math.PI * 2));
-    return r;
-  };
   const extractElems = (n, allData) => {
     const elems = Object.entries(n.links)
       .flatMap(([type, values]) =>
         [...group(values, (d) => d)].map(([id, values]) => {
           // console.log("allData", allData);
           const ob = allData.find((d) => d.id == id);
-          if (!ob)
-            console.log(
-              "ob",
-              id,
-              ob,
-              "allData",
-              allData,
-              allData.find((d) => d.id === "bouteille")
-            );
           const n = nodes.find((n) => n.id === id) || {
             x: width / 2,
             y: height / 2,
@@ -272,10 +262,14 @@
       .filter((e) => e.id !== n.id);
 
     const r = getRadius(elems) / (elems.length > 200 ? 1.5 : 1);
-    console.log("elems", elems);
-    const elemNodes = placement(elems, width / 2, height / 2, r, 0, 360);
-    console.log("r", r, "elemNodes", elemNodes);
-
+    const elemNodes = placement(
+      uniq(elems, "id"),
+      width / 2,
+      height / 2,
+      r,
+      0,
+      360
+    );
     const domain = array.extent(elemNodes, (d) =>
       d.links ? Object.values(d.links).flat().length : 0
     );
@@ -423,7 +417,7 @@
             font-size={n.selected ? '12px' : '10px'}
             x={n.x}
             y={n.y}
-            dy={n.dist > 10 && cells[i] ? orientDy[getAngle(cells[i])] : '0.35em'}
+            dy={n.dist > 20 && cells[i] ? orientDy[getAngle(cells[i])] : '0.35em'}
             dx={n.size + 1}
             text-anchor={n.dist > 10 && cells[i] && orientTextAnchor[getAngle(cells[i])]}
             transform={`${!n.selected && n.dist < 20 && nodes.length > 10 ? getRotate(n) : ''} translate(${getXOffset(n, i)}, ${getYOffset(n, i)})`}>

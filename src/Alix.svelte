@@ -3,22 +3,20 @@
   import { onMount } from "svelte";
   import { csvParse } from "d3-dsv";
 
-  const dreamData = fetch("static/dreams.csv")
+  const dreamData = fetch("static/dreams1.csv")
     .then((response) => response.text())
     .then((data) =>
       csvParse(data).map((d, i) => ({
         ...d,
         id: i,
         title: "DreaM " + i,
-        // type: "dream",
-        // color: "#8FBC8F",
         width: 15,
         height: 15,
         size: 7,
       }))
     );
 
-  const objectData = fetch("static/element.csv")
+  const objectData = fetch("static/element1.csv")
     .then((response) => response.text())
     .then((data) =>
       csvParse(data).map((d, i) => ({
