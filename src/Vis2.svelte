@@ -4,13 +4,12 @@
   import { group } from "d3-array";
   // import d3_radial from "d3-radial";
   import * as d3 from "d3-force";
-  import RadialLabels from "./RadialLabels.svelte";
   import * as sc from "d3-scale";
 
   import { Delaunay } from "d3-delaunay";
   import { polygonCentroid, polygonArea } from "d3-polygon";
-  import * as shape from "d3-shape";
 
+  import { types as nodeTypes } from "./lib";
   import uniq from "lodash.uniqby";
   // import * as z from "d3-zoom";
   import * as array from "d3-array";
@@ -20,13 +19,13 @@
   // import { bboxCollide } from "d3-bboxCollide";
   import { organizeData, colors } from "./lib";
   import App from "./App.svelte";
-  import Node from "./Node.svelte";
-
-  const arc = shape.arc();
-  const line = shape.line();
 
   export let dreams = [];
   export let objects = [];
+  export let w = 0;
+
+  const width = Math.min(800, w);
+  const height = width;
 
   const START_ANGLE = 0;
   const END_ANGLE = 360;
@@ -39,25 +38,12 @@
     return radians * (180 / pi);
   }
 
-  const getDistance = ([x1, y1], [x2, y2]) => {
-    var a = x1 - x2;
-    var b = y1 - y2;
-
-    var c = Math.sqrt(a * a + b * b);
-    return Math.abs(c);
-  };
-
   const getRadius = (values) => {
+    const size = 2;
     const circum = values.length * (size + 1) * 2; //2 * Math.PI * r
     const r = Math.max(150, circum / (Math.PI * 2));
     return r;
   };
-  const width = 875;
-  const height = 875;
-  // var spiral = d3_radial
-  //   .spiral([width / 2, height / 2])
-  //   .increment(10)
-  //   .coil(6);
   var radialLocation = function (center, angle, width, height, taper) {
     const [x, y] = center;
     return [x + width * Math.cos(angle), y + height * Math.sin(angle)];
@@ -110,54 +96,44 @@
   const data = rawData.map((d, i) => ({
     ...d,
     values: d.values.map((d) => ({ ...d, element: true })),
-    initial: true,
     visible: false,
     // title: d.id,
     size: 7,
   }));
-  const allData = uniq([...data.flatMap((d) => d.values)], "id").map((d) => ({
+
+  const allData = uniq([...data.flatMap((d) => d.values)], "id");
+  const domain = array.extent(allData, (d) =>
+    d.links ? Object.values(d.links).flat().length : 0
+  );
+  const sizeScale = sc.scaleLinear().domain(domain).range([1, 10]);
+  allData.forEach((d) => {
+    d.size = d.links
+      ? sizeScale(Object.values(d.links).flat().length)
+      : d.values.length;
+    d.angle = 0;
+  });
+
+  const selData = allData.filter((d) => d.size > 1);
+  const r = getRadius(selData);
+  let center = [width / 2, height / 2, r];
+  let nodes = placement(selData, width / 2, height / 2, r).map((d) => ({
     ...d,
-    size: 8,
+    r,
   }));
 
-  const r = getRadius(data);
-  let center = [width / 2, height / 2, r];
-  let nodes = placement(data, width / 2, height / 2, r);
-
-  const dreamNode = {
-    values: allData,
-    angle: 0,
-    id: "dreams",
-    title: "Dreams",
-    tx: width / 2,
-    ty: height / 2,
-    x: width / 2,
-    y: height / 2,
-    visible: true,
-    r: 0,
-    dist: r,
-    maxRadius: r,
-    size: 20,
-  };
   let domNodes = [];
 
   const simulation = d3
-    .forceSimulation([...nodes, dreamNode])
-    .alphaMin(0.5)
-    // .tick(1)
+    .forceSimulation([...nodes])
     .force(
       "collision",
       d3
         .forceCollide((d) => {
           return d.size + 3; //d.w / 2;
         })
-        .strength(3)
+        .strength(1)
     )
-
-    .force("x", d3.forceX((d) => d.tx).strength(0.2))
-    .force("y", d3.forceY((d) => d.ty).strength(0.2))
-    // .force("charge", d3.forceManyBody())
-    // .force("center", d3.forceCenter(width / 2, height / 2).strength(0.5))
+    .force("center", d3.forceCenter(width / 2, height / 2).strength(0.5))
 
     .on("tick", () => {
       // if (counter % 10 === 0)
@@ -181,6 +157,15 @@
   //   });
   // });
 
+  const restartSim = (ns) => {
+    simulation
+      .force("x", d3.forceX((d) => d.tx).strength(0.2))
+      .force("y", d3.forceY((d) => d.ty).strength(0.2))
+      .nodes(ns)
+      .alpha(1)
+      .restart();
+  };
+
   let bounds = null;
   let translate;
   let voronoi;
@@ -194,11 +179,11 @@
       bounds = [
         [
           array.min(nodes, (d, i) => d.x - bbox(i).width / 1.5),
-          array.min(nodes, (d, i) => d.y - bbox(i).height / 1.5),
+          array.min(nodes, (d, i) => d.y - bbox(i).height * 1.5),
         ],
         [
           array.max(nodes, (d, i) => d.x + bbox(i).width / 1.5),
-          array.max(nodes, (d, i) => d.y + bbox(i).height / 1.5),
+          array.max(nodes, (d, i) => d.y + bbox(i).height * 1.5),
         ],
       ];
 
@@ -220,31 +205,10 @@
     }
   }
 
-  let state = 0;
-  const size = 2;
-  const initialClickHandler = (n) => {
-    console.log("initialClickHandler", n);
-
-    const r = Math.max(90, n.values.length * 1.5);
-
-    const groups = placement(n.values, n.tx, n.ty, r).map((d) => ({
-      ...d,
-      size,
-    }));
-
-    center = [width / 2, height / 2, r];
-    const newNodes = [...groups, n];
-    simulation.nodes(newNodes);
-    simulation.alpha(1);
-    simulation.restart();
-  };
-
-  let prevAngle = 0;
   const extractElems = (n, allData) => {
     const elems = Object.entries(n.links)
       .flatMap(([type, values]) =>
         [...group(values, (d) => d)].map(([id, values]) => {
-          // console.log("allData", allData);
           const ob = allData.find((d) => d.id == id);
           const n = nodes.find((n) => n.id === id) || {
             x: width / 2,
@@ -269,16 +233,7 @@
       r,
       0,
       360
-    );
-    const domain = array.extent(elemNodes, (d) =>
-      d.links ? Object.values(d.links).flat().length : 0
-    );
-    const sizeScale = sc.scaleLinear().domain(domain).range([1, 10]);
-    elemNodes.forEach((d) => {
-      d.size = d.links
-        ? sizeScale(Object.values(d.links).flat().length)
-        : d.values.length;
-    });
+    ).map((d) => ({ ...d, r }));
     return elemNodes;
   };
   const elementClickHandler = (n) => {
@@ -299,9 +254,7 @@
       ],
       "id"
     );
-    simulation.nodes(newNodes);
-    simulation.alpha(1);
-    simulation.restart();
+    restartSim(newNodes);
   };
 
   const getSize = ([[x, y], cell]) => {
@@ -361,12 +314,29 @@
     return `rotate(${(n.angle * 180) / Math.PI}, ${n.x}, ${n.y})`;
   };
   const getXOffset = (n, i) => {
+    if (n.selected) return -n.size;
     const ret = n.dist > 10 && cells[i] ? orientX(n)[getAngle(cells[i])] : 2;
-    return ret;
+    return ret || 0;
   };
   const getYOffset = (n, i) => {
+    if (n.selected) return -n.size - 5;
     const ret = n.dist > 10 && cells[i] ? orientY(n)[getAngle(cells[i])] : 0;
-    return ret;
+    return ret || 0;
+  };
+  const getTextOrient = (n, i) => {
+    if (n.selected) return "middle";
+    if (n.dist > 10 && cells[i]) return orientTextAnchor[getAngle(cells[i])];
+    return "start";
+  };
+  const getDY = (n, i) => {
+    if (n.selected) return 0;
+    if (n.dist > 10 && cells[i]) return orientDy[getAngle(cells[i])];
+    return "0.35em";
+  };
+  const getTransform = (n, i) => {
+    let rot = "";
+    if (!n.selected && n.dist < 20) rot = getRotate(n);
+    return `${rot} translate(${getXOffset(n, i)}, ${getYOffset(n, i)})`;
   };
 </script>
 
@@ -379,22 +349,18 @@
   }
 </style>
 
-<div
-  class="relative border border-black overflow-hidden"
-  style="width:{width}px; height:{height}px;}">
+<div class="relative overflow-visible flex">
   <svg
     {width}
     {height}
     id="zoom-cont"
-    class="left-0 top-0 absolute overflow-visible"
+    class="overflow-visible"
     style="transform: {translate ? `translate(${translate[0]}px, ${translate[1]}px) scale(${translate[2]})` : `translate(0%,0%)`}; ">
     <g>
       {#each nodes as n, i (n.id)}
         <circle
           on:click={() => {
-            state++;
-            if (n.initial) return initialClickHandler(n);
-            if (n.element) return elementClickHandler(n);
+            elementClickHandler(n);
           }}
           class="opacity-70 cursor-pointer stroke-current border-black"
           fill={colors[n.type]}
@@ -405,9 +371,7 @@
       {#each nodes as n, i (n.id)}
         <g
           on:click={() => {
-            state++;
-            if (n.initial) return initialClickHandler(n);
-            if (n.element) return elementClickHandler(n);
+            elementClickHandler(n);
           }}>
           <text
             bind:this={domNodes[i]}
@@ -417,10 +381,10 @@
             font-size={n.selected ? '12px' : '10px'}
             x={n.x}
             y={n.y}
-            dy={n.dist > 20 && cells[i] ? orientDy[getAngle(cells[i])] : '0.35em'}
+            dy={getDY(n, i)}
             dx={n.size + 1}
-            text-anchor={n.dist > 10 && cells[i] && orientTextAnchor[getAngle(cells[i])]}
-            transform={`${!n.selected && n.dist < 20 && nodes.length > 10 ? getRotate(n) : ''} translate(${getXOffset(n, i)}, ${getYOffset(n, i)})`}>
+            text-anchor={getTextOrient(n, i)}
+            transform={getTransform(n, i)}>
             {#if !(cells[i] && getSize(cells[i]) < 1000)}{n.title}{/if}
           </text>
           <title>{n.title}</title>
@@ -430,4 +394,16 @@
 
     <path fill="none" stroke="none" d={voronoi && voronoi.render()} />
   </svg>
+  <div class="flex hidden" style="transform:translateX(-50%)">
+    <ul class="list-disc">
+      {#each nodeTypes.slice(0, nodeTypes.length / 2) as n}
+        <li style="color: {colors[n]}">{n}</li>
+      {/each}
+    </ul>
+    <ul class="ml-6 list-disc">
+      {#each nodeTypes.slice(nodeTypes.length / 2) as n}
+        <li style="color: {colors[n]}">{n}</li>
+      {/each}
+    </ul>
+  </div>
 </div>

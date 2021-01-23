@@ -27,7 +27,7 @@ const cs = [
   "#bcbd22",
   "#17becf",
 ];
-const cs1 = [
+export const cs1 = [
   "#4e79a7",
   "#f28e2c",
   "#e15759",
@@ -90,13 +90,6 @@ export const organizeData = ({ dreams: rawData, objects }) => {
     objects.map((d) => {
       const selectedAttr = attrs.find((a) =>
         rawData.find((e) => extractElems(e[a]).includes(d.id))
-      );
-      console.log(
-        "selectedAttr",
-        d.id,
-        attrs.filter((a) =>
-          rawData.find((e) => extractElems(e[a]).includes(d.id))
-        )
       );
       let ret = {};
       if (selectedAttr) ret = { [selectedAttr]: d.id };

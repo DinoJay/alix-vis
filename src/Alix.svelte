@@ -31,15 +31,19 @@
       }))
     );
   const promise = Promise.all([dreamData, objectData]);
+  let w = 0;
+  let h = 0;
 </script>
 
 <style>
 </style>
 
-{#if promise}
-  {#await promise}
-    <p>Loading...</p>
-  {:then [dreams, objects]}
-    <Vis {dreams} {objects} />
-  {/await}
-{/if}
+<div class="flex-grow" bind:clientWidth={w} bind:clientHeight={h}>
+  {#if promise}
+    {#await promise}
+      <p>Loading...</p>
+    {:then [dreams, objects]}
+      <Vis {dreams} {objects} {w} {h} />
+    {/await}
+  {/if}
+</div>
