@@ -33,6 +33,7 @@
     "d3-selection": "^2.0.0",
     "d3-shape": "^2.0.0",
     "d3-zoom": "^2.0.0",
+    "lodash.sortby": "^4.7.0",
     "lodash.uniqby": "^4.7.0",
     "postcss": "^8.2.1",
     "postcss-load-config": "^3.0.0",

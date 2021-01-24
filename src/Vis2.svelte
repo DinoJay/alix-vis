@@ -9,8 +9,9 @@
   import { Delaunay } from "d3-delaunay";
   import { polygonCentroid, polygonArea } from "d3-polygon";
 
-  import { types as nodeTypes } from "./lib";
+  import { types as initialNodeTypes } from "./lib";
   import uniq from "lodash.uniqby";
+  import sortBy from "lodash.sortBy";
   // import * as z from "d3-zoom";
   import * as array from "d3-array";
   import * as sel from "d3-selection";
@@ -23,6 +24,7 @@
   export let dreams = [];
   export let objects = [];
   export let w = 0;
+  let initial = true;
 
   const width = Math.min(800, w);
   const height = width;
@@ -68,7 +70,7 @@
       .range([r + 50, 50]);
 
     const maxStrength = 1 / array.max(nodes, (d) => d.strength);
-    return nodes.map((d, i) => {
+    return sortBy(nodes, (n) => (!initial ? n.type : null)).map((d, i) => {
       const angle = degrees_to_radians(current);
       const strength = 1 / d.strength;
       const radius = scale(d.strength); //((r / 6) * strength) / maxStrength;
@@ -87,6 +89,8 @@
         // visible: i % 2,
       };
     });
+    //(d) => d.type
+    //);
   };
 
   const rawData = organizeData({
@@ -170,7 +174,9 @@
   let translate;
   let voronoi;
   let cells = [];
+  let nodeTypes = [];
   $: {
+    nodeTypes = sortBy([...group(nodes, (d) => d.type).keys()], (d) => d);
     if (domNodes.length > 0) {
       const bbox = (i) =>
         domNodes[i]
@@ -197,6 +203,7 @@
       );
 
       translate = [width / 2 - scale * xx, height / 2 - scale * yy, scale];
+
       const ds = nodes.map((d) => [d.x, d.y]);
       const delaunay = Delaunay.from(ds);
       voronoi = delaunay.voronoi([-100, -100, width + 100, height + 100]);
@@ -237,6 +244,7 @@
     return elemNodes;
   };
   const elementClickHandler = (n) => {
+    initial = false;
     console.log("elementClickHandler", n);
     const elemNodes = extractElems(n, allData);
 
@@ -325,7 +333,12 @@
   };
   const getTextOrient = (n, i) => {
     if (n.selected) return "middle";
-    if (n.dist > 10 && cells[i]) return orientTextAnchor[getAngle(cells[i])];
+    if (cells[i]) {
+      const orient = getAngle(cells[i]);
+      if (initial && n.id === "chambre") return "end";
+      if (n.dist > 10 && cells[i]) return orientTextAnchor[orient];
+    }
+
     return "start";
   };
   const getDY = (n, i) => {
@@ -337,6 +350,10 @@
     let rot = "";
     if (!n.selected && n.dist < 20) rot = getRotate(n);
     return `${rot} translate(${getXOffset(n, i)}, ${getYOffset(n, i)})`;
+  };
+  const labelShown = (n, i) => {
+    if (initial && n.size > 4) return true;
+    return !(cells[i] && getSize(cells[i]) < 1000);
   };
 </script>
 
@@ -354,7 +371,7 @@
     {width}
     {height}
     id="zoom-cont"
-    class="overflow-visible"
+    class="m-auto overflow-visible"
     style="transform: {translate ? `translate(${translate[0]}px, ${translate[1]}px) scale(${translate[2]})` : `translate(0%,0%)`}; ">
     <g>
       {#each nodes as n, i (n.id)}
@@ -362,7 +379,8 @@
           on:click={() => {
             elementClickHandler(n);
           }}
-          class="opacity-70 cursor-pointer stroke-current border-black"
+          class=" cursor-pointer stroke-current border-black"
+          opacity={initial && n.size < 4 ? 0.3 : 0.7}
           fill={colors[n.type]}
           r={n.size}
           cx={n.x}
@@ -376,7 +394,7 @@
           <text
             bind:this={domNodes[i]}
             class={' cursor-pointer'}
-            font-weight={n.selected ? 'bold' : ''}
+            font-weight={n.selected || (initial && n.size > 4) ? 'bold' : ''}
             fill={colors[n.type]}
             font-size={n.selected ? '12px' : '10px'}
             x={n.x}
@@ -385,7 +403,7 @@
             dx={n.size + 1}
             text-anchor={getTextOrient(n, i)}
             transform={getTransform(n, i)}>
-            {#if !(cells[i] && getSize(cells[i]) < 1000)}{n.title}{/if}
+            {#if labelShown(n, i)}{n.title}{/if}
           </text>
           <title>{n.title}</title>
         </g>
@@ -394,7 +412,7 @@
 
     <path fill="none" stroke="none" d={voronoi && voronoi.render()} />
   </svg>
-  <div class="flex hidden" style="transform:translateX(-50%)">
+  <div class="flex " style="transform:translateX(-00%)">
     <ul class="list-disc">
       {#each nodeTypes.slice(0, nodeTypes.length / 2) as n}
         <li style="color: {colors[n]}">{n}</li>
@@ -407,3 +425,4 @@
     </ul>
   </div>
 </div>
+i
