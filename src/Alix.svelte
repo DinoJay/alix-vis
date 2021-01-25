@@ -38,10 +38,10 @@
 <style>
 </style>
 
-<div class="flex-grow" bind:clientWidth={w} bind:clientHeight={h}>
+<div class="flex-grow flex" bind:clientWidth={w} bind:clientHeight={h}>
   {#if promise}
     {#await promise}
-      <p>Loading...</p>
+      <p class="text-6xl m-auto">Loading...</p>
     {:then [dreams, objects]}
       <Vis {dreams} {objects} {w} {h} />
     {/await}

@@ -312,6 +312,7 @@
     left: -n.size - 2,
     bottom: n.size + 2,
   });
+
   const orientX = (n) => ({
     top: 0,
     bottom: 0,
@@ -322,17 +323,19 @@
     return `rotate(${(n.angle * 180) / Math.PI}, ${n.x}, ${n.y})`;
   };
   const getXOffset = (n, i) => {
-    if (n.selected) return -n.size;
+    if (!n.selected && nodes.length < 40) return 0;
+    // if (n.selected) return -n.size;
     const ret = n.dist > 10 && cells[i] ? orientX(n)[getAngle(cells[i])] : 2;
     return ret || 0;
   };
   const getYOffset = (n, i) => {
-    if (n.selected) return -n.size - 5;
+    if (!n.selected && nodes.length < 40) return 0;
+    // if (n.selected) return -n.size - 5;
     const ret = n.dist > 10 && cells[i] ? orientY(n)[getAngle(cells[i])] : 0;
     return ret || 0;
   };
   const getTextOrient = (n, i) => {
-    if (n.selected) return "middle";
+    if (!n.selected && nodes.length < 40) return "start";
     if (cells[i]) {
       const orient = getAngle(cells[i]);
       if (initial && n.id === "chambre") return "end";
@@ -342,13 +345,15 @@
     return "start";
   };
   const getDY = (n, i) => {
+    if (!n.selected && nodes.length < 40) return "0.35em";
     if (n.selected) return 0;
     if (n.dist > 10 && cells[i]) return orientDy[getAngle(cells[i])];
     return "0.35em";
   };
   const getTransform = (n, i) => {
     let rot = "";
-    if (!n.selected && n.dist < 20) rot = getRotate(n);
+    if ((!n.selected && n.dist < 40) || (!n.selected && nodes.length < 40))
+      rot = getRotate(n);
     return `${rot} translate(${getXOffset(n, i)}, ${getYOffset(n, i)})`;
   };
   const labelShown = (n, i) => {
@@ -373,6 +378,16 @@
     id="zoom-cont"
     class="m-auto overflow-visible"
     style="transform: {translate ? `translate(${translate[0]}px, ${translate[1]}px) scale(${translate[2]})` : `translate(0%,0%)`}; ">
+    <defs>
+      <filter x="0" y="0" width="1" height="1" id="solid">
+        <feFlood flood-color="black" flood-opacity="0.5" result="bg" />
+        <feMerge>
+          <feMergeNode in="bg" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+
     <g>
       {#each nodes as n, i (n.id)}
         <circle
@@ -425,4 +440,3 @@
     </ul>
   </div>
 </div>
-i

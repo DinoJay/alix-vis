@@ -95,10 +95,10 @@
   <div class="time"><time>Tuesday, September, 5th, 2014</time></div>
 
   <section class="">
-    <div class="mx-24 md:flex xs:flex-col">
-      <div class="max-w-xs " style="border-right: 3px solid #333;">
+    <div class="md:flex xs:flex-col">
+      <div class="max-w-xs px-12  mr-8" style="border-right: 3px solid #333;">
         <h2>Subheading to the article</h2>
-        <p lang="en">
+        <p class="text-justify" lang="en">
           Maecenas faucibus mollis interdum. Cum sociis natoque penatibus et
           magnis dis parturient montes, nascetur ridiculus mus. Cras justo odio,
           dapibus ac facilisis in, egestas eget quam. Sed posuere consectetur

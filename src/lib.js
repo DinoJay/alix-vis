@@ -91,6 +91,7 @@ export const organizeData = ({ dreams: rawData, objects }) => {
       const selectedAttr = attrs.find((a) =>
         rawData.find((e) => extractElems(e[a]).includes(d.id))
       );
+
       let ret = {};
       if (selectedAttr) ret = { [selectedAttr]: d.id };
 
