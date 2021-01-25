@@ -89,13 +89,13 @@
   }
 </style>
 
-<main>
+<main class="lg:mx-32">
   <h1>Alix Dream Vis</h1>
 
   <div class="time"><time>Tuesday, September, 5th, 2014</time></div>
 
   <section class="">
-    <div class="md:flex xs:flex-col">
+    <div class="md:flex xs:flex-col ">
       <div class="max-w-xs px-12  mr-8" style="border-right: 3px solid #333;">
         <h2>Subheading to the article</h2>
         <p class="text-justify" lang="en">

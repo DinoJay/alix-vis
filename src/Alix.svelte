@@ -31,19 +31,25 @@
       }))
     );
   const promise = Promise.all([dreamData, objectData]);
-  let w = 0;
-  let h = 0;
+  let w;
+  let h;
+  let width;
+  $: width = Math.min(800, w);
 </script>
 
 <style>
 </style>
 
-<div class="flex-grow flex" bind:clientWidth={w} bind:clientHeight={h}>
+<div
+  class="flex-grow flex"
+  style="max-width:{width}px"
+  bind:clientWidth={w}
+  bind:clientHeight={h}>
   {#if promise}
     {#await promise}
       <p class="text-6xl m-auto">Loading...</p>
     {:then [dreams, objects]}
-      <Vis {dreams} {objects} {w} {h} />
+      <Vis {dreams} {objects} {width} {h} />
     {/await}
   {/if}
 </div>
