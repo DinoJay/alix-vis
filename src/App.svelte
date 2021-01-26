@@ -1,6 +1,9 @@
 <script>
   export let name;
   import Alix from "./Alix.svelte";
+
+  import { colors } from "./lib";
+  import { nodeTypes } from "./store.js";
 </script>
 
 <style global>
@@ -18,20 +21,9 @@
   body {
     font-family: "PT Serif", serif;
     color: #404040;
-    background: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/567707/paper_fibers.png)
-      repeat;
+    /* background: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/567707/paper_fibers.png) */
+    /* repeat; */
     padding: 20px;
-  }
-
-  blockquote {
-    font-family: "Oswald", sans-serif;
-    line-height: 1.2em;
-    font-size: 1.8em;
-    column-span: 2;
-    -webkit-column-span: 2;
-    margin: 0px;
-    padding: 0px;
-    margin-left: 5px;
   }
 
   h1 {
@@ -55,7 +47,7 @@
   }
 
   h2 {
-    font-size: 3em;
+    font-size: 2em;
     line-height: 1em;
     margin-top: 10px;
     margin-bottom: 10px;
@@ -89,23 +81,40 @@
   }
 </style>
 
-<main class="lg:mx-32">
+<main class="md:mx-16 xl:mx-16">
   <h1>Alix Dream Vis</h1>
 
-  <div class="time"><time>Tuesday, September, 5th, 2014</time></div>
+  <div class="time"><time>Alix' Dreams visualized between 2012-2017</time></div>
 
   <section class="">
     <div class="md:flex xs:flex-col ">
-      <div class="max-w-xs px-12  mr-8" style="border-right: 3px solid #333;">
-        <h2>Subheading to the article</h2>
+      <div
+        style="min-width:15rem; max-width: 18rem"
+        class="md:max-w-xs md:px-8  mr-8 min-w-content border-black ">
+        <h2>What is this?</h2>
+
         <p class="text-justify" lang="en">
-          Maecenas faucibus mollis interdum. Cum sociis natoque penatibus et
-          magnis dis parturient montes, nascetur ridiculus mus. Cras justo odio,
-          dapibus ac facilisis in, egestas eget quam. Sed posuere consectetur
-          est at lobortis. Morbi leo risus, porta ac consectetur ac, vestibulum
-          at eros. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-          Curabitur blandit tempus porttitor.
+          For a long time, Alix kept track of her dreams in a diary. In the end
+          of 2020, she finally found the heart to extract all the kewyords in a
+          Google Sheet. This is my attempt to visualize them by showing the
+          co-occurence. The distance between two circles denotes how often the
+          corresponing keywords occur together in dreams whereas the size of the
+          circle shows the absolute number how often a term occurs in the set of
+          dreams. You can select a starting node on the right side or tick off a
+          category below to deselect it:
         </p>
+        <div class="flex mt-3 ml-3" style="transform:translateX(-00%)">
+          <ul class="list-disc list-inside">
+            {#each $nodeTypes.slice(0, $nodeTypes.length / 2) as n}
+              <li style="color: {colors[n]}">{n}</li>
+            {/each}
+          </ul>
+          <ul class="ml-6 list-inside list-disc">
+            {#each $nodeTypes.slice($nodeTypes.length / 2) as n}
+              <li style="color: {colors[n]}">{n}</li>
+            {/each}
+          </ul>
+        </div>
       </div>
       <Alix />
     </div>

@@ -19,6 +19,9 @@
   // import Vis from "./Vis.tmp";
   // import { bboxCollide } from "d3-bboxCollide";
   import { organizeData, colors } from "./lib";
+
+  import { nodeTypes } from "./store.js";
+
   import App from "./App.svelte";
 
   export let dreams = [];
@@ -128,6 +131,7 @@
 
   const simulation = d3
     .forceSimulation([...nodes])
+    .alphaMin(0.6)
     .force(
       "collision",
       d3
@@ -173,9 +177,10 @@
   let translate;
   let voronoi;
   let cells = [];
-  let nodeTypes = [];
+
   $: {
-    nodeTypes = sortBy([...group(nodes, (d) => d.type).keys()], (d) => d);
+    nodeTypes.update(sortBy([...group(nodes, (d) => d.type).keys()], (d) => d));
+
     if (domNodes.length > 0) {
       const bbox = (i) =>
         domNodes[i]
@@ -309,14 +314,14 @@
     top: -n.size - 3,
     right: n.size + 2,
     left: -n.size - 2,
-    bottom: n.size + 2,
+    bottom: n.size * 1.5,
   });
 
   const orientX = (n) => ({
     top: 0,
     bottom: 0,
     right: 0, //n.size/2,
-    left: Math.min(-n.size * 2, -7),
+    left: 0, //Math.min(-n.size * 2, -7),
   });
   const getRotate = (n) => {
     return `rotate(${(n.angle * 180) / Math.PI}, ${n.x}, ${n.y})`;
@@ -389,12 +394,12 @@
   }
 </style>
 
-<div class="relative overflow-visible flex">
+<div class="relative flex">
   <svg
     {width}
     {height}
     id="zoom-cont"
-    class="m-auto overflow-visible"
+    class="m-auto "
     style="transform: {translate ? `translate(${translate[0]}px, ${translate[1]}px) scale(${translate[2]})` : `translate(0%,0%)`}; ">
     <defs>
       <filter x="0" y="0" width="1" height="1" id="solid">
@@ -445,16 +450,4 @@
 
     <path fill="none" stroke="none" d={voronoi && voronoi.render()} />
   </svg>
-  <div class="flex " style="transform:translateX(-00%)">
-    <ul class="list-disc">
-      {#each nodeTypes.slice(0, nodeTypes.length / 2) as n}
-        <li style="color: {colors[n]}">{n}</li>
-      {/each}
-    </ul>
-    <ul class="ml-6 list-disc">
-      {#each nodeTypes.slice(nodeTypes.length / 2) as n}
-        <li style="color: {colors[n]}">{n}</li>
-      {/each}
-    </ul>
-  </div>
 </div>

@@ -34,22 +34,35 @@
   let w;
   let h;
   let width;
-  $: width = Math.min(800, w);
+  let dom;
+  let counter = 0;
+  $: {
+    width = Math.min(1200, w);
+    console.log("counter", counter);
+  }
+
+  const ro = new ResizeObserver((entries) => {
+    for (let entry of entries) {
+      counter++;
+      console.log("entry", entry);
+      // entry.target.style.borderRadius =
+      //   Math.max(0, 250 - entry.contentRect.width) + "px";
+    }
+  });
+  onMount(() => {
+    ro.observe(dom);
+  });
 </script>
 
 <style>
 </style>
 
-<div
-  class="flex-grow flex"
-  style="max-width:{width}px"
-  bind:clientWidth={w}
-  bind:clientHeight={h}>
+<div class="flex-grow flex mx-8 " bind:this={dom} bind:clientWidth={w}>
   {#if promise}
     {#await promise}
       <p class="text-6xl m-auto">Loading...</p>
     {:then [dreams, objects]}
-      <Vis {dreams} {objects} {width} {h} />
+      <Vis {dreams} {objects} {width} />
     {/await}
   {/if}
 </div>
