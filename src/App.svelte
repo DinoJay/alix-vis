@@ -23,7 +23,7 @@
     color: #404040;
     /* background: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/567707/paper_fibers.png) */
     /* repeat; */
-    padding: 20px;
+    /* padding: 20px; */
   }
 
   h1 {
@@ -89,8 +89,8 @@
   <section class="">
     <div class="md:flex xs:flex-col ">
       <div
-        style="min-width:15rem; max-width: 18rem"
-        class="md:max-w-xs md:px-8  mr-8 min-w-content border-black ">
+        style="min-width:15rem; max-width: 20rem"
+        class="md:max-w-xs md:px-8  md:mr-8 min-w-content border-black ">
         <h2>What is this?</h2>
 
         <p class="text-justify" lang="en">

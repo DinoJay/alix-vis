@@ -206,6 +206,7 @@
         Math.min(20, 0.9 / Math.max(dx / width, dy / height))
       );
 
+      console.log("scale", scale);
       translate = [width / 2 - scale * xx, height / 2 - scale * yy, scale];
 
       const ds = nodes.map((d) => [d.x, d.y]);

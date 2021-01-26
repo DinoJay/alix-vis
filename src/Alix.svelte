@@ -36,9 +36,12 @@
   let width;
   let dom;
   let counter = 0;
+  const maxWidth = 950;
+
   $: {
-    width = Math.min(1200, w);
+    width = Math.min(maxWidth, w);
     console.log("counter", counter);
+    console.log("w", w);
   }
 
   const ro = new ResizeObserver((entries) => {
@@ -57,7 +60,11 @@
 <style>
 </style>
 
-<div class="flex-grow flex mx-8 " bind:this={dom} bind:clientWidth={w}>
+<div
+  class="flex-grow flex md:mx-8 "
+  style="max-width: {maxWidth}px"
+  bind:this={dom}
+  bind:clientWidth={w}>
   {#if promise}
     {#await promise}
       <p class="text-6xl m-auto">Loading...</p>
