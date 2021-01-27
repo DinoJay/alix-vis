@@ -328,7 +328,7 @@
       return `rotate(${(n.angle * 180) / Math.PI}, ${n.x}, ${n.y})`;
     }
   };
-  const distMaxRad = 29;
+  const distMaxRad = 10;
   const getXOffset = (n, i) => {
     // if (!n.selected && nodes.length < 40) return 0;
 
