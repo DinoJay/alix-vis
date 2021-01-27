@@ -329,14 +329,14 @@
     }
   };
   const distMaxRad = 10;
+  const insideCircle = (n) =>
+    nodes.length > 50 && n.dist / n.maxRadius > distMaxRad / n.maxRadius;
   const getXOffset = (n, i) => {
     // if (!n.selected && nodes.length < 40) return 0;
 
     // if (n.selected) return -n.size;
     const ret =
-      n.dist / n.maxRadius > distMaxRad / n.maxRadius && cells[i]
-        ? orientX(n)[getAngle(cells[i])]
-        : undefined;
+      insideCircle(n) && cells[i] ? orientX(n)[getAngle(cells[i])] : undefined;
 
     if (ret) return ret;
 
@@ -347,12 +347,9 @@
     }
   };
   const getYOffset = (n, i) => {
-    if (!n.selected && nodes.length < 40) return 0;
     // if (n.selected) return -n.size - 5;
     const ret =
-      n.dist / n.maxRadius > distMaxRad / n.maxRadius && cells[i]
-        ? orientY(n)[getAngle(cells[i])]
-        : 0;
+      insideCircle(n) && cells[i] ? orientY(n)[getAngle(cells[i])] : 0;
     return ret || 0;
   };
   const getTextOrient = (n, i) => {
@@ -360,16 +357,7 @@
     if (cells[i]) {
       const orient = getAngle(cells[i]);
       if (initial && n.id === "chambre") return "end";
-      // console.log(
-      //   "n dist",
-      //   n.dist,
-      //   "maxRad",
-      //   n.maxRadius,
-      //   "distMax",
-      //   distMaxRad
-      // );
-      if (n.dist / n.maxRadius > distMaxRad / n.maxRadius && cells[i])
-        return orientTextAnchor[orient];
+      if (insideCircle(n) && cells[i]) return orientTextAnchor[orient];
     }
 
     if (n.angle > Math.PI / 2 && n.angle < 1.5 * Math.PI) {
@@ -379,17 +367,13 @@
     }
   };
   const getDY = (n, i) => {
-    if (!n.selected && nodes.length < 40) return "0.35em";
     if (n.selected) return 0;
-    if (n.dist > distMaxRad && cells[i]) return orientDy[getAngle(cells[i])];
+    if (insideCircle(n) && cells[i]) return orientDy[getAngle(cells[i])];
     return "0.35em";
   };
   const getTransform = (n, i) => {
     let rot = "";
-    if (
-      (!n.selected && n.dist / n.maxRadius < distMaxRad / n.maxRadius) ||
-      (!n.selected && nodes.length < 40)
-    )
+    if ((!n.selected && !insideCircle(n)) || (!n.selected && nodes.length < 40))
       rot = getRotate(n);
     return `${rot} translate(${getXOffset(n, i)}, ${getYOffset(n, i)})`;
   };
