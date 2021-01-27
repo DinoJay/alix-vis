@@ -43,17 +43,12 @@
     console.log("counter", counter);
     console.log("w", w);
   }
-
-  const ro = new ResizeObserver((entries) => {
-    for (let entry of entries) {
-      counter++;
-      console.log("entry", entry);
-      // entry.target.style.borderRadius =
-      //   Math.max(0, 250 - entry.contentRect.width) + "px";
-    }
-  });
   onMount(() => {
-    ro.observe(dom);
+    window.addEventListener("resize", function (event) {
+      console.log("resize", w);
+      width = Math.min(maxWidth, w);
+      // do stuff here
+    });
   });
 </script>
 
@@ -62,7 +57,7 @@
 
 <div
   class="flex-grow flex md:mx-8 "
-  style="max-width: {maxWidth}px"
+  style=""
   bind:this={dom}
   bind:clientWidth={w}>
   {#if promise}

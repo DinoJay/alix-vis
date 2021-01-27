@@ -203,10 +203,9 @@
       const yy = (bounds[0][1] + bounds[1][1]) / 2;
       let scale = Math.max(
         1,
-        Math.min(20, 0.9 / Math.max(dx / width, dy / height))
+        Math.min(10, 0.9 / Math.max(dx / width, dy / height))
       );
 
-      console.log("scale", scale);
       translate = [width / 2 - scale * xx, height / 2 - scale * yy, scale];
 
       const ds = nodes.map((d) => [d.x, d.y]);
@@ -314,15 +313,15 @@
   const orientY = (n) => ({
     top: -n.size - 3,
     right: n.size + 2,
-    left: -n.size - 2,
-    bottom: n.size * 1.5,
+    left: -n.size - 5,
+    bottom: n.size * 1,
   });
 
   const orientX = (n) => ({
     top: 0,
-    bottom: 0,
-    right: 0, //n.size/2,
-    left: 0, //Math.min(-n.size * 2, -7),
+    bottom: n.size + 2,
+    right: 0,
+    left: 0,
   });
   const getRotate = (n) => {
     return `rotate(${(n.angle * 180) / Math.PI}, ${n.x}, ${n.y})`;
@@ -449,6 +448,6 @@
       {/each}
     </g>
 
-    <path fill="none" stroke="none" d={voronoi && voronoi.render()} />
+    <path fill="none" stroke="black" d={voronoi && voronoi.render()} />
   </svg>
 </div>
