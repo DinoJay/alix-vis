@@ -22,8 +22,6 @@
 
   import { nodeTypes } from "./store.js";
 
-  import App from "./App.svelte";
-
   export let dreams = [];
   export let objects = [];
   export let width = 0;
@@ -312,29 +310,41 @@
 
   const orientY = (n) => ({
     top: -n.size - 3,
-    right: n.size + 2,
+    right: n.size + 3,
     left: -n.size - 5,
-    bottom: n.size * 1,
+    bottom: n.size > 15 ? n.size * 1.5 : n.size / 2 + 6,
   });
 
   const orientX = (n) => ({
     top: 0,
-    bottom: n.size + 2,
+    bottom: 0, //n.title.length * 2 + 2,
     right: 0,
     left: 0,
   });
   const getRotate = (n) => {
-    return `rotate(${(n.angle * 180) / Math.PI}, ${n.x}, ${n.y})`;
+    if (n.angle > Math.PI / 2 && n.angle < 1.5 * Math.PI) {
+      return `rotate(${(n.angle * 180) / Math.PI - 180},${n.x}, ${n.y})`;
+    } else {
+      return `rotate(${(n.angle * 180) / Math.PI}, ${n.x}, ${n.y})`;
+    }
   };
   const distMaxRad = 29;
   const getXOffset = (n, i) => {
-    if (!n.selected && nodes.length < 40) return 0;
+    // if (!n.selected && nodes.length < 40) return 0;
+
     // if (n.selected) return -n.size;
     const ret =
       n.dist / n.maxRadius > distMaxRad / n.maxRadius && cells[i]
         ? orientX(n)[getAngle(cells[i])]
-        : 2;
-    return ret || 0;
+        : undefined;
+
+    if (ret) return ret;
+
+    if (n.angle > Math.PI / 2 && n.angle < 1.5 * Math.PI) {
+      return -n.size * 2 - 4;
+    } else {
+      return 2;
+    }
   };
   const getYOffset = (n, i) => {
     if (!n.selected && nodes.length < 40) return 0;
@@ -346,7 +356,7 @@
     return ret || 0;
   };
   const getTextOrient = (n, i) => {
-    if (!n.selected && nodes.length < 40) return "start";
+    // if (!n.selected && nodes.length < 40) return "start";
     if (cells[i]) {
       const orient = getAngle(cells[i]);
       if (initial && n.id === "chambre") return "end";
@@ -362,7 +372,11 @@
         return orientTextAnchor[orient];
     }
 
-    return "start";
+    if (n.angle > Math.PI / 2 && n.angle < 1.5 * Math.PI) {
+      return "end";
+    } else {
+      return "start";
+    }
   };
   const getDY = (n, i) => {
     if (!n.selected && nodes.length < 40) return "0.35em";
@@ -448,6 +462,6 @@
       {/each}
     </g>
 
-    <path fill="none" stroke="black" d={voronoi && voronoi.render()} />
+    <path fill="none" stroke="none" d={voronoi && voronoi.render()} />
   </svg>
 </div>

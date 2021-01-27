@@ -89,7 +89,7 @@
   <section class="">
     <div class="md:flex xs:flex-col ">
       <div
-        style="min-width:15rem; max-width: 20rem"
+        style="min-width:18rem; max-width: 20rem"
         class="md:max-w-xs md:px-8  md:mr-8 min-w-content border-black ">
         <h2>What is this?</h2>
 
@@ -103,13 +103,15 @@
           dreams. You can select a starting node on the right side or tick off a
           category below to deselect it:
         </p>
-        <div class="flex mt-3 ml-3" style="transform:translateX(-00%)">
+        <div
+          class="flex mt-3 ml-3 uppercase"
+          style="transform:translateX(-00%) ">
           <ul class="list-disc list-inside">
             {#each $nodeTypes.slice(0, $nodeTypes.length / 2) as n}
               <li style="color: {colors[n]}">{n}</li>
             {/each}
           </ul>
-          <ul class="ml-6 list-inside list-disc">
+          <ul class="ml-6 list-inside list-disc ">
             {#each $nodeTypes.slice($nodeTypes.length / 2) as n}
               <li style="color: {colors[n]}">{n}</li>
             {/each}
