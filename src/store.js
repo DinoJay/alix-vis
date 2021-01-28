@@ -6,6 +6,7 @@ function createStore() {
   return {
     subscribe,
     update: (n) => set(n),
+    // updateNodeTypes: n=> update(u=> {...u, })
     reset: () => {},
   };
 }

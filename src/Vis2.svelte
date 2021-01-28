@@ -64,7 +64,7 @@
     const rad = degrees_to_radians(rad);
     const scale = sc
       .scalePow()
-      .exponent(0.1)
+      .exponent(0.0001)
       // .scaleSqrt()
       .domain(array.extent(nodes, (d) => d.strength))
       .range([r + 50, 50]);
