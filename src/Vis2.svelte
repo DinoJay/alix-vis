@@ -378,7 +378,7 @@
     return `${rot} translate(${getXOffset(n, i)}, ${getYOffset(n, i)})`;
   };
   const labelShown = (n, i) => {
-    if (initial && n.size > 4) return true;
+    if (initial && n.size > 3) return true;
     return !(cells[i] && getSize(cells[i]) < 1000);
   };
 </script>
@@ -416,7 +416,7 @@
             elementClickHandler(n);
           }}
           class=" cursor-pointer stroke-current border-black"
-          opacity={initial && n.size < 4 ? 0.3 : 0.7}
+          opacity={initial && n.size < 3 ? 0.3 : 0.7}
           fill={colors[n.type]}
           r={n.size}
           cx={n.x}
@@ -430,7 +430,7 @@
           <text
             bind:this={domNodes[i]}
             class={' cursor-pointer'}
-            font-weight={n.selected || (initial && n.size > 4) ? 'bold' : ''}
+            font-weight={n.selected || (initial && n.size > 3) ? 'bold' : ''}
             fill={colors[n.type]}
             font-size={n.selected ? '12px' : '10px'}
             x={n.x}
