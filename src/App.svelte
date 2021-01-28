@@ -4,6 +4,11 @@
 
   import { colors } from "./lib";
   import { nodeTypes } from "./store.js";
+  let types = [];
+  const updateTypes = (id) => {
+    if (types.includes(id)) types = types.filter((t) => t !== id);
+    else types = [...types, id];
+  };
 </script>
 
 <style global>
@@ -11,8 +16,6 @@
   @tailwind components;
   @tailwind utilities;
 
-  main {
-  }
   ::selection {
     background: #808080;
     color: #e6e6e6;
@@ -100,20 +103,25 @@
           co-occurence. The distance between two circles denotes how often the
           corresponing keywords occur together in dreams whereas the size of the
           circle shows the absolute number how often a term occurs in the set of
-          dreams. You can select a starting node on the right side or tick off a
-          category below to deselect it:
+          dreams. You can select a starting node on the right side and see the
+          visualized categories in the bottom.
         </p>
         <div
           class="flex mt-3 ml-3 uppercase"
           style="transform:translateX(-00%) ">
           <ul class="list-disc list-inside">
             {#each $nodeTypes.slice(0, $nodeTypes.length / 2) as n}
-              <li style="color: {colors[n]}">{n}</li>
+              <li
+                class={!n.enabled && 'line-through'}
+                style="color: {colors[n.id]}"
+                on:click={() => updateTypes(n.id)}>
+                {n.id}
+              </li>
             {/each}
           </ul>
           <ul class="ml-6 list-inside list-disc ">
             {#each $nodeTypes.slice($nodeTypes.length / 2) as n}
-              <li style="color: {colors[n]}">{n}</li>
+              <li style="color: {colors[n.id]}">{n.id}</li>
             {/each}
           </ul>
         </div>

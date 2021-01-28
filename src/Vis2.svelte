@@ -25,6 +25,7 @@
   export let dreams = [];
   export let objects = [];
   export let width = 0;
+  export let types = [];
   let initial = true;
 
   const height = width;
@@ -64,7 +65,7 @@
     const rad = degrees_to_radians(rad);
     const scale = sc
       .scalePow()
-      .exponent(0.0001)
+      .exponent(0.000001)
       // .scaleSqrt()
       .domain(array.extent(nodes, (d) => d.strength))
       .range([r + 50, 50]);
@@ -147,20 +148,8 @@
       //   n.visible = true;
       // });
       // counter++;
-    });
-  // .on("end", () => {
-  //   domNodes.map((n, i) => {
-  //     const ns = domNodes.filter((o, j) => {
-  //       return collide(n.getBBox(), o.getBBox());
-  //     });
-  //     console.log("ns", ns);
-  //     if (ns.length > 0) {
-  //       console.log("yeah", n.id);
-  //       nodes[i].visible = false;
-  //     }
-  //     // else n.visible = true;
-  //   });
-  // });
+    })
+    .on("end", () => {});
 
   const restartSim = (ns) => {
     simulation
@@ -177,8 +166,12 @@
   let cells = [];
 
   $: {
-    nodeTypes.update(sortBy([...group(nodes, (d) => d.type).keys()], (d) => d));
-
+    nodeTypes.update(
+      sortBy([...group(nodes, (d) => d.type).keys()], (d) => d).map((d) => ({
+        id: d,
+        enabled: true,
+      }))
+    );
     if (domNodes.length > 0) {
       const bbox = (i) =>
         domNodes[i]
@@ -209,7 +202,6 @@
       const ds = nodes.map((d) => [d.x, d.y]);
       const delaunay = Delaunay.from(ds);
       voronoi = delaunay.voronoi([-100, -100, width + 100, height + 100]);
-
       cells = ds.map((d, i) => [d, voronoi.cellPolygon(i)]);
     }
   }

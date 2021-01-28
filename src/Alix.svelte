@@ -2,6 +2,7 @@
   import Vis from "./Vis2.svelte";
   import { onMount } from "svelte";
   import { csvParse } from "d3-dsv";
+  export let types = [];
 
   const dreamData = fetch("static/dreams1.csv")
     .then((response) => response.text())
@@ -64,7 +65,7 @@
     {#await promise}
       <p class="text-6xl m-auto">Loading...</p>
     {:then [dreams, objects]}
-      <Vis {dreams} {objects} {width} />
+      <Vis {types} {dreams} {objects} {width} />
     {/await}
   {/if}
 </div>
